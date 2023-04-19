@@ -15,34 +15,34 @@ export const routes: Array<PathRouteProps> = [
     path: "/",
     element: <Home />
   },
-  {
-    path: "/swap",
-    element: <Swap />
-  },
-  {
-    path: "/earn",
-    element: <Earn />
-  },
+  // {
+  //   path: "/swap",
+  //   element: <Swap />
+  // },
+  // {
+  //   path: "/earn",
+  //   element: <Earn />
+  // },
   {
     path: "/play",
     element: <Play />
-  },
-  {
-    path: "/portfolio",
-    element: <Portfolio />
-  },
-  {
-    path: "/collections",
-    element: <NFT />
-  },
-  {
-    path: "/ido",
-    element: <IDO />
-  },
-  {
-    path: "/pool/:slug",
-    element: <Pool />
   }
+  // {
+  //   path: "/portfolio",
+  //   element: <Portfolio />
+  // },
+  // {
+  //   path: "/collections",
+  //   element: <NFT />
+  // },
+  // {
+  //   path: "/ido",
+  //   element: <IDO />
+  // },
+  // {
+  //   path: "/pool/:slug",
+  //   element: <Pool />
+  // }
 ]
 
 export const privateRoutes: Array<PathRouteProps> = []

@@ -8,7 +8,7 @@ import MotionFlex from "theme/motion/components/MotionFlex"
 export const SubHeader = () => {
   const activeRoute = useRecoilValue(activeRouteState)
   return (
-    <Tabs as={motion.div} w="full" pos="absolute" top="4rem">
+    <Tabs as={motion.div} w="full" pos="absolute" top="4rem" zIndex={1}>
       <AnimatePresence mode="wait">
         {activeRoute && (
           <MotionFlex
@@ -26,9 +26,10 @@ export const SubHeader = () => {
             borderBottom="none"
             shadow="md"
           >
-            {Object.entries(activeRoute).map((route) => {
+            {Object.entries(activeRoute).map((route, index) => {
               return (
                 <Tab
+                  key={index}
                   color="brand.1"
                   borderBottom="3px solid"
                   fontWeight="400"

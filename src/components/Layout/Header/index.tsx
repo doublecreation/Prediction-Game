@@ -39,13 +39,17 @@ const Header = () => {
           src="/assets/logo_transparent.png"
         />
         {Boolean(breakpoint !== "md") && (
-          <Heading
-            fontSize={{ base: "17", md: "18", lg: "20" }}
-            as="h1"
-            fontFamily="body"
-          >
-            Hopers
-          </Heading>
+          // <Heading
+          //   fontSize={{ base: "17", md: "18", lg: "20" }}
+          //   as="h1"
+          //   fontFamily="body"
+          // >
+          //   FUZIO
+          // </Heading>
+          <Image
+            w={{ base: "7rem", lg: "8rem" }}
+            src="/assets/fuzio_name.png"
+          />
         )}
       </HStack>
       {!isMobile && <Spacer />}

@@ -34,6 +34,8 @@ import { useRecoilState } from "recoil"
 import { activeRouteState } from "state/UIState"
 import NavigationButton, { NavigationButtonProps } from "./NavigationButton"
 import { useChain } from "@cosmos-kit/react"
+import { EarnIcon } from "components/Assets/EarnIcon"
+import { AssetsIcon } from "components/Assets/AssetsIcon"
 
 export const RouterArea = () => {
   const location = useLocation()
@@ -48,22 +50,23 @@ export const RouterArea = () => {
         icon: <Icon zIndex={1} as={SwapIcon} h="full" w="full" />,
         label: "Trade",
         navId: 0,
-        url: "/swap",
+        url: "/",
         subLinks: {
-          Swap: "/swap"
+          Swap: "/",
+          "Options Trading": "/play"
         }
       },
       {
-        icon: <Icon zIndex={1} as={FarmIcon} h="full" w="full" />,
-        label: "Earn",
+        icon: <Icon zIndex={1} as={IDOIcon} h="full" w="full" />,
+        label: "IDO",
         navId: 1,
-        url: "/earn"
+        url: "/"
       },
       {
-        icon: <Icon zIndex={1} as={PortfolioIcon} h="full" w="full" />,
-        label: "Portfolio",
+        icon: <Icon zIndex={1} as={EarnIcon} h="full" w="full" />,
+        label: "Earn",
         navId: 2,
-        url: "/portfolio",
+        url: "/",
         isDisabled: isWalletConnected ? false : true
       },
       {
@@ -76,18 +79,11 @@ export const RouterArea = () => {
         }
       },
       {
-        icon: <Icon zIndex={1} as={NFTIcon} h="full" w="full" />,
+        icon: <Icon zIndex={1} as={AssetsIcon} h="full" w="full" />,
         isDisabled: true,
-        label: "NFTs",
+        label: "Assets",
         navId: 4,
-        url: "/collections"
-      },
-      {
-        icon: <Icon zIndex={1} as={IDOIcon} h="full" w="full" />,
-        isDisabled: true,
-        label: "IDO",
-        navId: 5,
-        url: "/ido"
+        url: "/"
       }
     ]
   }, [isWalletConnected])
