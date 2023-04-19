@@ -17,8 +17,8 @@ export const SubHeader = () => {
             exit={{ y: -50 }}
             animate={{ y: 0 }}
             transition={{ type: "tween", duration: 0.5 }}
-            bg="white"
-            _dark={{ bg: "gray.700" }}
+            bg="#474747"
+            _dark={{ bg: "#474747" }}
             h="2.5rem"
             w="full"
             justifyContent="center"
@@ -30,8 +30,8 @@ export const SubHeader = () => {
               return (
                 <Tab
                   key={index}
-                  color="brand.1"
-                  borderBottom="3px solid"
+                  color="white"
+                  borderBottom="3px solid #00b3ff"
                   fontWeight="400"
                   py={"0.35rem"}
                   fontSize="19"
