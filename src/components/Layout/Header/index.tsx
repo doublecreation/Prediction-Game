@@ -31,7 +31,8 @@ const Header = () => {
       h="4rem"
       shadow="md"
       zIndex={5}
-      bg={useColorModeValue("white", "gray.800")}
+      // bg={useColorModeValue("white", "gray.800")}
+      bg={useColorModeValue("#474747", "#474747")}
     >
       <HStack pos="relative" spacing={1}>
         <Image

@@ -47,7 +47,7 @@ export const RouterArea = () => {
   const data: NavigationButtonProps[] = useMemo(() => {
     return [
       {
-        icon: <Icon zIndex={1} as={SwapIcon} h="full" w="full" />,
+        icon: <Icon zIndex={1} as={SwapIcon} h="full" w="full" fill="white" />,
         label: "Trade",
         navId: 0,
         url: "/",
@@ -57,20 +57,20 @@ export const RouterArea = () => {
         }
       },
       {
-        icon: <Icon zIndex={1} as={IDOIcon} h="full" w="full" />,
+        icon: <Icon zIndex={1} as={IDOIcon} h="full" w="full" stroke="white" />,
         label: "IDO",
         navId: 1,
         url: "/"
       },
       {
-        icon: <Icon zIndex={1} as={EarnIcon} h="full" w="full" />,
+        icon: <Icon zIndex={1} as={EarnIcon} h="full" w="full" fill="white" />,
         label: "Earn",
         navId: 2,
         url: "/",
         isDisabled: isWalletConnected ? false : true
       },
       {
-        icon: <Icon zIndex={1} as={WinIcon} h="full" w="full" />,
+        icon: <Icon zIndex={1} as={WinIcon} h="full" w="full" fill="white" />,
         label: "Play",
         navId: 3,
         url: "/play",
@@ -79,7 +79,9 @@ export const RouterArea = () => {
         }
       },
       {
-        icon: <Icon zIndex={1} as={AssetsIcon} h="full" w="full" />,
+        icon: (
+          <Icon zIndex={1} as={AssetsIcon} h="full" w="full" fill="white" />
+        ),
         isDisabled: true,
         label: "Assets",
         navId: 4,

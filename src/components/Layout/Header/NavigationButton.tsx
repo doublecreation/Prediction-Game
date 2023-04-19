@@ -121,6 +121,7 @@ const NavigationButton = ({
                 fontWeight="400"
                 fontFamily="heading"
                 textAlign="start"
+                color="white"
               >
                 {label}
               </Text>
