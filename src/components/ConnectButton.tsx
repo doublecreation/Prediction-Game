@@ -85,7 +85,7 @@ const ConnectButton: FC<ConnectButtonProps> = () => {
     openView,
     isWalletConnected,
     status: walletStatus
-  } = useChain("juno")
+  } = useChain("seimainnet")
 
   const { onCopy, value, setValue } = useClipboard("")
 

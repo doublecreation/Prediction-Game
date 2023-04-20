@@ -28,6 +28,7 @@ import RecoilNexus from "recoil-nexus"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { getModal } from "components/WalletModal/getModal"
 import Updater from "Updater"
+import { AssetInfo, ChainInfo } from "./constants"
 
 const App = () => {
   return (
@@ -35,11 +36,10 @@ const App = () => {
       <RecoilRoot>
         <RecoilNexus />
         <QueryClientProvider client={queryClient}>
-          <Updater />
           <ReactQueryDevtools initialIsOpen={false} />
           <ChainProvider
-            chains={chains}
-            assetLists={assets}
+            chains={[...chains, ChainInfo]}
+            assetLists={[...assets, AssetInfo]}
             modalTheme={theme}
             wrappedWithChakra={false}
             key="chainProvider"
@@ -185,6 +185,7 @@ const App = () => {
               isLazy: true
             }}
           >
+            <Updater />
             <Router>
               <MotionConfig
                 transition={{ type: "spring", bounce: 0.4, damping: 7 }}

@@ -3,10 +3,14 @@ import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { useRecoilState } from "recoil"
 import { btcPriceState } from "state/btcPriceState"
+import { balanceState } from "state/userInfo"
+import useContract from "hooks/useContract"
 
 export default function Updater(): null {
   const [, setBtcPrice] = useRecoilState(btcPriceState)
-  const { data } = useQuery({
+  const [, setBalance] = useRecoilState(balanceState)
+  const { getBalance } = useContract()
+  const { data: btcPriceResponse } = useQuery({
     queryKey: ["btcPrice"],
     queryFn: () =>
       axios
@@ -14,16 +18,23 @@ export default function Updater(): null {
         .then((res) => res.data),
     refetchInterval: 1000 * 10
   })
+
+  const { data: balanceResopnse } = useQuery({
+    queryKey: ["balance"],
+    queryFn: () => getBalance(),
+    refetchInterval: 1000
+  })
+
   useEffect(() => {
-    if (data?.market_data) {
-      const priceNumber = data.market_data.current_price?.usd || 0
+    if (btcPriceResponse?.market_data) {
+      const priceNumber = btcPriceResponse.market_data.current_price?.usd || 0
       const price = priceNumber.toLocaleString("en-US", {
         maximumFractionDigits: 3
       })
       const priceChangeNumber =
         Math.round(
-          (data.market_data.price_change_percentage_1h_in_currency?.usd || 0) *
-            1000
+          (btcPriceResponse.market_data.price_change_percentage_1h_in_currency
+            ?.usd || 0) * 1000
         ) / 1000
       const priceChange =
         priceChangeNumber === 0
@@ -38,6 +49,11 @@ export default function Updater(): null {
         state
       })
     }
-  }, [data])
+  }, [btcPriceResponse])
+
+  useEffect(() => {
+    if (balanceResopnse && !isNaN(balanceResopnse)) setBalance(balanceResopnse)
+  }, [balanceResopnse])
+
   return null
 }
