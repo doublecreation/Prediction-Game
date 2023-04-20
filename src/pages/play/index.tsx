@@ -178,7 +178,7 @@ const Play = () => {
           <PredictionGameCard time={10} gameStatus={"later"} />
         </SwiperSlide> */}
       </Swiper>
-      <Flex
+      {/* <Flex
         pos="absolute"
         bottom="1rem"
         right="1rem"
@@ -200,7 +200,7 @@ const Play = () => {
             </Text>
           </VStack>
         </HStack>
-      </Flex>
+      </Flex> */}
     </Flex>
   )
 }
