@@ -9,24 +9,25 @@ import { Prediction } from "pages/play"
 import Earn from "pages/earn"
 import Pool from "pages/pool"
 import Portfolio from "pages/portfolio"
+import Coming from "pages/coming"
 
 export const routes: Array<PathRouteProps> = [
   {
     path: "/",
     element: <Home />
   },
-  // {
-  //   path: "/swap",
-  //   element: <Swap />
-  // },
-  // {
-  //   path: "/earn",
-  //   element: <Earn />
-  // },
+  {
+    path: "/swap",
+    element: <Coming />
+  },
+  {
+    path: "/earn",
+    element: <Coming />
+  },
   {
     path: "/play/prediction",
     element: <Prediction />
-  }
+  },
   // {
   //   path: "/portfolio",
   //   element: <Portfolio />
@@ -35,10 +36,10 @@ export const routes: Array<PathRouteProps> = [
   //   path: "/collections",
   //   element: <NFT />
   // },
-  // {
-  //   path: "/ido",
-  //   element: <IDO />
-  // },
+  {
+    path: "/ido",
+    element: <Coming />
+  }
   // {
   //   path: "/pool/:slug",
   //   element: <Pool />

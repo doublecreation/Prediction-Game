@@ -44,22 +44,22 @@ export const RouterArea = () => {
         icon: <Icon zIndex={1} as={SwapIcon} h="full" w="full" fill="white" />,
         label: "Trade",
         navId: 0,
-        url: "/",
+        url: "/swap",
         subLinks: {
-          Swap: "/"
+          Swap: "/swap"
         }
       },
       {
         icon: <Icon zIndex={1} as={IDOIcon} h="full" w="full" stroke="white" />,
         label: "IDO",
         navId: 1,
-        url: "/"
+        url: "/ido"
       },
       {
         icon: <Icon zIndex={1} as={EarnIcon} h="full" w="full" fill="white" />,
         label: "Earn",
         navId: 2,
-        url: "/",
+        url: "/earn",
         isDisabled: isWalletConnected ? false : true
       },
       {
