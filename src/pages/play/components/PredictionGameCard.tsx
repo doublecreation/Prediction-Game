@@ -63,8 +63,6 @@ export const PredictionGameCard = ({
   //   )
   // })
 
-  console.log("debug", inputValue)
-
   const handleChangeInputValue = (event) => {
     event.preventDefault()
     setInputValue(event.target.value)
@@ -195,7 +193,7 @@ export const PredictionGameCard = ({
               left="calc(50% - 7.25rem)"
               pos="absolute"
               flexDirection="column"
-              px={8}
+              px={3}
               py={1}
               color="white"
             >
@@ -248,7 +246,7 @@ export const PredictionGameCard = ({
               left="calc(50% - 7.25rem)"
               pos="absolute"
               flexDirection="column"
-              px={8}
+              px={3}
               py={1}
               color="white"
             >
@@ -277,7 +275,7 @@ export const PredictionGameCard = ({
               left="calc(50% - 7.25rem)"
               pos="absolute"
               flexDirection="column"
-              px={8}
+              px={3}
               py={1}
               color="white"
             >
@@ -318,7 +316,7 @@ export const PredictionGameCard = ({
               left="calc(50% - 7.25rem)"
               pos="absolute"
               flexDirection="column"
-              px={8}
+              px={3}
               py={1}
               color="white"
             >
