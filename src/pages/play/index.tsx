@@ -17,7 +17,13 @@ import { Swiper, SwiperSlide } from "swiper/react"
 import "swiper/css"
 import "swiper/css/effect-coverflow"
 import "swiper/css/pagination"
-import { EffectCoverflow, Navigation, Pagination, Virtual } from "swiper"
+import {
+  EffectCoverflow,
+  Mousewheel,
+  Navigation,
+  Pagination,
+  Virtual
+} from "swiper"
 import { type Swiper as SwiperRef } from "swiper"
 import { useRef, useCallback, useState, useEffect } from "react"
 import { Helmet } from "react-helmet"
@@ -113,7 +119,8 @@ const Play = () => {
         // }}
         onSlideChange={() => console.log("slide change")}
         onSwiper={(swiper) => setSwiper(swiper)}
-        modules={[EffectCoverflow, Pagination, Virtual, Navigation]}
+        modules={[EffectCoverflow, Pagination, Virtual, Navigation, Mousewheel]}
+        mousewheel={true}
         navigation={{
           prevEl: prevRef?.current,
           nextEl: nextRef?.current

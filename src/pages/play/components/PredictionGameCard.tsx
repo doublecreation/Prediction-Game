@@ -170,7 +170,7 @@ export const PredictionGameCard = ({
                   : "#00283A"
               }
               clipPath="url(#upClip)"
-              bg={"red"}
+              bg={"#B1B1B1"}
               width="70%"
               height="100%"
               textAlign="center"
@@ -359,7 +359,7 @@ export const PredictionGameCard = ({
                   : "#00283A"
               }
               clipPath="url(#downClip)"
-              bg={"red"}
+              bg={"#B1B1B1"}
               width="70%"
               height="100%"
               textAlign="center"
