@@ -47,7 +47,7 @@ const Layout = ({ children }: LayoutProps) => {
           <AnimatePresence mode="wait">{children}</AnimatePresence>
           <BackgroundImage w="full" h="full" pos="absolute" zIndex={-1} />
         </Flex>
-        <Footer />
+        {/* <Footer /> */}
       </Flex>
 
       <ToastContainer
