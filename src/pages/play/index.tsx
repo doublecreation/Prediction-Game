@@ -9,11 +9,9 @@ import {
   useBreakpoint,
   VStack
 } from "@chakra-ui/react"
-import { FaQuestionCircle } from "react-icons/fa"
-import { GameTimer } from "./components/GameTimer"
-import { PairPicker } from "./components/PairPicker"
 import { PredictionGameCard } from "./components/PredictionGameCard"
 import { SwiperController } from "./components/SwiperController"
+import { BitcoinPrice, GameTimer } from "./components"
 
 import { Swiper, SwiperSlide } from "swiper/react"
 import "swiper/css"
@@ -66,7 +64,7 @@ const Play = () => {
         gap={8}
         align="center"
       >
-        <PairPicker />
+        <BitcoinPrice />
         <SwiperController nextRef={nextRef} prevRef={prevRef} />
         <GameTimer />
       </Flex>

@@ -1,7 +1,11 @@
 import { Text, Heading, Center, HStack, IconButton } from "@chakra-ui/react"
 import { BiArrowFromLeft } from "react-icons/bi"
-import { BsClockFill } from "react-icons/bs"
-import { FaQuestionCircle } from "react-icons/fa"
+import {
+  BsHourglassTop,
+  BsHourglassSplit,
+  BsHourglassBottom
+} from "react-icons/bs"
+import { FaQuestion } from "react-icons/fa"
 
 export const GameTimer = () => {
   return (
@@ -19,8 +23,8 @@ export const GameTimer = () => {
         h="3rem"
       >
         <Heading fontSize="24">00:00</Heading>
-        <Text>5m</Text>
-        <BsClockFill />
+        <Heading fontSize="24">5m</Heading>
+        <BsHourglassTop size={35} />
       </Center>
       <IconButton
         rounded="1em"
@@ -29,7 +33,7 @@ export const GameTimer = () => {
         w="3rem"
         _dark={{ bg: "gray.700", _hover: { bg: "gray.600" } }}
         shadow="md"
-        icon={<FaQuestionCircle />}
+        icon={<FaQuestion />}
         aria-label="Open Documentation / Help"
       />
     </HStack>
