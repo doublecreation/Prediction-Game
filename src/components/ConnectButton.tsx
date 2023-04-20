@@ -28,6 +28,9 @@ import { FaClipboardList } from "react-icons/fa"
 import { BiLogOut } from "react-icons/bi"
 import { useLocalStorageState } from "ahooks"
 import { toast } from "react-toastify"
+import { ChainInfo } from "../constants"
+import { useRecoilState } from "recoil"
+import useWalletConnect from "hooks/useWalletConnect"
 
 export type ConnectButtonProps = ButtonProps & {
     activeIndex?: number
@@ -80,53 +83,13 @@ export const walletToolbarItemVariants: Variants = {
 }
 
 const ConnectButton: FC<ConnectButtonProps> = () => {
-    const {
-        address,
-        openView,
-        isWalletConnected,
-        status: walletStatus
-    } = useChain("seimainnet")
+    const { address, isWalletConnected } = useChain(ChainInfo.chain_name)
 
-    const { onCopy, value, setValue } = useClipboard("")
+    const { connect, disconnect } = useWalletConnect()
+
+    const { onCopy } = useClipboard("")
 
     const breakpoint = useBreakpoint()
-
-    const [connectedWalletStorage, setConnectedWalletStorage] =
-        useLocalStorageState<boolean>("@hopers/walletStatus", {
-            defaultValue: false
-        })
-
-    const connectWalletBackgroundImage = useMotionValue(
-        connectedWalletStorage
-            ? "linear-gradient(0deg, rgb(2,226,150),rgb(2,226,150))"
-            : "linear-gradient(0deg, rgb(218, 32, 73),rgb(218, 32, 73))"
-    )
-
-    useEffect(() => {
-        if (walletStatus === WalletStatus.Connected) {
-            setValue(address ?? "")
-            animate(
-                connectWalletBackgroundImage,
-                "linear-gradient(0deg, rgb(2,226,150),rgb(2,226,150))",
-                {
-                    duration: 0.5,
-                    type: "tween"
-                }
-            )
-            setConnectedWalletStorage(true)
-        } else {
-            animate(
-                connectWalletBackgroundImage,
-                "linear-gradient(0deg, rgb(218, 32, 73),rgb(218, 32, 73))",
-                {
-                    duration: 0.5,
-                    type: "tween"
-                }
-            )
-            setConnectedWalletStorage(false)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [walletStatus])
 
     const textColor = useColorModeValue("gray.800", "gray.800")
 
@@ -149,17 +112,13 @@ const ConnectButton: FC<ConnectButtonProps> = () => {
             as={motion.div}
             minW={{ base: "6rem", md: "7rem", lg: "7rem" }}
             h="3rem"
-            onClick={async () => {
-                if (isWalletConnected) return
-                openView()
-            }}
+            onClick={connect}
             overflow="hidden"
             rounded="1em"
             shadow="md"
             px={2}
             style={{
-                // @ts-expect-error "MotionValue(string) != string"
-                backgroundImage: connectWalletBackgroundImage
+                backgroundColor: "#00b3ff"
             }}
         >
             <HStack h="full" justify="start" w="full">
@@ -229,9 +188,7 @@ const ConnectButton: FC<ConnectButtonProps> = () => {
                                     aria-label="Open Wallet Modal"
                                     as={motion.div}
                                     icon={<BiLogOut size="0.8rem" />}
-                                    onClick={() => {
-                                        openView()
-                                    }}
+                                    onClick={disconnect}
                                     size="none"
                                     w="1.3rem"
                                     h="1.3rem"

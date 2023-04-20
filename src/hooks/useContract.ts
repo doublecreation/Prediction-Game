@@ -1,12 +1,7 @@
-import {
-    getCosmWasmClient,
-    getSigningCosmWasmClient,
-    getQueryClient
-} from "@sei-js/core"
+import { getCosmWasmClient } from "@sei-js/core"
 import { useCallback } from "react"
 import { useChain } from "@cosmos-kit/react"
 import { ExtendedHttpEndpoint } from "@cosmos-kit/core"
-import { useQueryClient } from "@sei-js/react"
 import { cosmos } from "juno-network"
 import { coins } from "@cosmjs/proto-signing"
 import { AssetInfo, ChainInfo } from "../constants"
@@ -14,8 +9,9 @@ import { toMicroAmount } from "utils/tokens/coins"
 import { StdFee } from "@cosmjs/stargate"
 
 const useContract = () => {
-    const { getRpcEndpoint, address, getSigningCosmWasmClient, estimateFee } =
-        useChain("seimainnet")
+    const { getRpcEndpoint, address, getSigningCosmWasmClient } = useChain(
+        ChainInfo.chain_name
+    )
 
     const getRpcEndpointString = useCallback(async () => {
         let rpcEndpoint = await getRpcEndpoint()
