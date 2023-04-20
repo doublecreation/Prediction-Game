@@ -11,9 +11,11 @@ import {
   Image,
   VStack
 } from "@chakra-ui/react"
-import { FaArrowDown } from "react-icons/fa"
+import { useRecoilState } from "recoil"
+import { btcPriceState } from "state/btcPriceState"
 
 export const BitcoinPrice = () => {
+  const [{ price, state, priceChange }] = useRecoilState(btcPriceState)
   return (
     <HStack
       pos={{ base: "relative", md: "absolute" }}
@@ -26,12 +28,18 @@ export const BitcoinPrice = () => {
           <Text fontWeight="bold" fontSize="1rem" color="white">
             BItcoin BTC
           </Text>
-          <Text fontWeight="bold" fontSize="1rem" color="rgba(0, 221, 49, 0.8)">
-            +1%
-          </Text>
+          {state !== 0 && (
+            <Text
+              fontWeight="bold"
+              fontSize="1rem"
+              color={state === 1 ? "#00dd31" : "#dd0000"}
+            >
+              {priceChange}
+            </Text>
+          )}
         </HStack>
         <Text fontWeight="bold" fontSize="1.2rem" color="white">
-          52.345,64 USD
+          {`${price} USD`}
         </Text>
       </VStack>
     </HStack>

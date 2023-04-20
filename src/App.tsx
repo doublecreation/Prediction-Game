@@ -27,6 +27,7 @@ import "react-toastify/dist/ReactToastify.css"
 import RecoilNexus from "recoil-nexus"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { getModal } from "components/WalletModal/getModal"
+import Updater from "Updater"
 
 const App = () => {
   return (
@@ -34,6 +35,7 @@ const App = () => {
       <RecoilRoot>
         <RecoilNexus />
         <QueryClientProvider client={queryClient}>
+          <Updater />
           <ReactQueryDevtools initialIsOpen={false} />
           <ChainProvider
             chains={chains}

@@ -76,7 +76,8 @@ export default defineConfig(({ mode }) => {
       })
     ],
     server: {
-      hmr: true
+      hmr: true,
+      host: true
     }
   }
 })
