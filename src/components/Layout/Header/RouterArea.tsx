@@ -46,8 +46,7 @@ export const RouterArea = () => {
         navId: 0,
         url: "/",
         subLinks: {
-          Swap: "/",
-          "Options Trading": "/play"
+          Swap: "/"
         }
       },
       {
@@ -67,9 +66,9 @@ export const RouterArea = () => {
         icon: <Icon zIndex={1} as={WinIcon} h="full" w="full" fill="white" />,
         label: "Play",
         navId: 3,
-        url: "/play",
+        url: "/play/prediction",
         subLinks: {
-          Prediction: "/play"
+          Prediction: "/play/prediction"
         }
       },
       {

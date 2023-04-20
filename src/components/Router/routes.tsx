@@ -5,7 +5,7 @@ import Swap from "pages/swap"
 import Assets from "pages/portfolio"
 import NFT from "pages/nft"
 import IDO from "pages/ido"
-import Play from "pages/play"
+import { Prediction } from "pages/play"
 import Earn from "pages/earn"
 import Pool from "pages/pool"
 import Portfolio from "pages/portfolio"
@@ -24,8 +24,8 @@ export const routes: Array<PathRouteProps> = [
   //   element: <Earn />
   // },
   {
-    path: "/play",
-    element: <Play />
+    path: "/play/prediction",
+    element: <Prediction />
   }
   // {
   //   path: "/portfolio",
