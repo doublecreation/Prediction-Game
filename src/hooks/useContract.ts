@@ -13,20 +13,37 @@ import { AssetInfo, ChainInfo } from "../constants"
 const useContract = () => {
   const { getRpcEndpoint, address } = useChain("seimainnet")
 
-  const getBalance = useCallback(async () => {
-    if (!address) return 0
+  const getRpcEndpointString = useCallback(async () => {
     let rpcEndpoint = await getRpcEndpoint()
 
     if (!rpcEndpoint) {
       console.info("no rpc endpoint — using a fallback")
       rpcEndpoint = ChainInfo.apis.rpc[0].address
     }
+    return typeof rpcEndpoint === "string"
+      ? rpcEndpoint
+      : (rpcEndpoint as ExtendedHttpEndpoint).url
+  }, [getRpcEndpoint])
+
+  const runQuery = useCallback(
+    async (contractAddress: string, queryMsg: any) => {
+      const rpcEndpoint = await getRpcEndpointString()
+      const cosmwasmClient = await getCosmWasmClient(rpcEndpoint)
+      const result = await cosmwasmClient.queryContractSmart(
+        contractAddress,
+        queryMsg
+      )
+      return result
+    },
+    [getRpcEndpointString]
+  )
+
+  const getBalance = useCallback(async () => {
+    if (!address) return 0
     // get RPC client
+    const rpcEndpoint = await getRpcEndpointString()
     const client = await cosmos.ClientFactory.createRPCQueryClient({
-      rpcEndpoint:
-        typeof rpcEndpoint === "string"
-          ? rpcEndpoint
-          : (rpcEndpoint as ExtendedHttpEndpoint).url
+      rpcEndpoint
     })
     // fetch balance
     const balance = await client.cosmos.bank.v1beta1.balance({
@@ -35,10 +52,11 @@ const useContract = () => {
     })
 
     return Number(balance?.balance?.amount || 0) / 1e6
-  }, [])
+  }, [address, getRpcEndpointString])
 
   return {
-    getBalance
+    getBalance,
+    runQuery
   }
 }
 

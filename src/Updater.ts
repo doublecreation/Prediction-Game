@@ -10,6 +10,7 @@ export default function Updater(): null {
   const [, setBtcPrice] = useRecoilState(btcPriceState)
   const [, setBalance] = useRecoilState(balanceState)
   const { getBalance } = useContract()
+
   const { data: btcPriceResponse } = useQuery({
     queryKey: ["btcPrice"],
     queryFn: () =>
