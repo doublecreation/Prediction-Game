@@ -59,7 +59,7 @@ const Header = () => {
       <HStack spacing={"6px"}>
         <ConnectButton />
         {isMobile && <RouterArea />}
-        {!isMobile && <ThemeToggle />}
+        {/* {!isMobile && <ThemeToggle />} */}
         {!isMobile && <HeaderMenu />}
       </HStack>
     </Flex>

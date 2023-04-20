@@ -76,16 +76,16 @@ const Play = () => {
           minHeight: "23rem",
           justifyContent: "center"
         }}
-        effect={"coverflow"}
+        // effect={"coverflow"}
         grabCursor={false}
         centeredSlides={true}
-        coverflowEffect={{
-          rotate: 50,
-          stretch: 0,
-          depth: 0,
-          modifier: 0.5,
-          slideShadows: false
-        }}
+        // coverflowEffect={{
+        //   rotate: 50,
+        //   stretch: 0,
+        //   depth: 0,
+        //   modifier: 0.5,
+        //   slideShadows: false
+        // }}
         // onInit={() => {
         //   setInit(true)
         // }}
@@ -103,7 +103,7 @@ const Play = () => {
             spaceBetween: 30
           },
           1200: {
-            slidesPerView: 5,
+            slidesPerView: 4,
             spaceBetween: 30
           }
         }}
@@ -121,14 +121,14 @@ const Play = () => {
         initialSlide={3}
         // ref={sliderRef}
       >
-        <SwiperSlide
+        {/* <SwiperSlide
           style={{
             justifyContent: "center",
             display: "flex"
           }}
         >
           <PredictionGameCard gameStatus={"expired"} />
-        </SwiperSlide>
+        </SwiperSlide> */}
         <SwiperSlide
           style={{
             justifyContent: "center",
@@ -169,14 +169,14 @@ const Play = () => {
         >
           <PredictionGameCard time={5} gameStatus={"later"} />
         </SwiperSlide>
-        <SwiperSlide
+        {/* <SwiperSlide
           style={{
             justifyContent: "center",
             display: "flex"
           }}
         >
           <PredictionGameCard time={10} gameStatus={"later"} />
-        </SwiperSlide>
+        </SwiperSlide> */}
       </Swiper>
       <Flex
         pos="absolute"

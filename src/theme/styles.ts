@@ -8,7 +8,9 @@ const styles = {
       transition: "0.2s all"
     },
     ".swiper-pagination": {
-      alignItems: "center"
+      alignItems: "center",
+      bottom: "0 !important",
+      transform: "translate(0, calc(100% + 20px))"
     }
   })
 }

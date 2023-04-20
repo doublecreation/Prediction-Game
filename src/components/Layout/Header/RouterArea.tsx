@@ -17,18 +17,12 @@ import {
   useColorModeValue,
   VStack
 } from "@chakra-ui/react"
-import { FarmIcon } from "components/Assets/FarmIcon"
 import { IDOIcon } from "components/Assets/IDOIcon"
-import { NFTIcon } from "components/Assets/NFTIcon"
-import { PortfolioIcon } from "components/Assets/portfolio/PortfolioIcon"
 import { SwapIcon } from "components/Assets/SwapIcon"
 import { WinIcon } from "components/Assets/WinIcon"
 import { motion } from "framer-motion"
 import { useCallback, useMemo, useRef, useState } from "react"
-import { BsHouseFill } from "react-icons/bs"
-import { FaUserFriends, FaParachuteBox, FaStore } from "react-icons/fa"
 import { HiOutlineMenuAlt3 } from "react-icons/hi"
-import { MdFullscreen, MdFullscreenExit } from "react-icons/md"
 import { useLocation } from "react-router-dom"
 import { useRecoilState } from "recoil"
 import { activeRouteState } from "state/UIState"
