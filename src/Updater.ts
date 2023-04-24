@@ -56,11 +56,12 @@ export default function Updater(): null {
     useEffect(() => {
         if (!gameInfo) return
         if (gameInfo.btcPrice) setBtcPrice(gameInfo.btcPrice)
+
+        const now = Number(new Date())
+        const currentTime = Number(gameInfo?.current_time || now)
+        setTimeDiff(now - currentTime)
+
         if (gameInfo.rounds?.length) {
-            const currentTime = Number(gameInfo.rounds[0].current_time) / 1e6
-            const now = Number(new Date())
-            console.log("debug", currentTime)
-            setTimeDiff(now - currentTime)
             setRounds(
                 (
                     gameInfo.rounds?.map((round) => {

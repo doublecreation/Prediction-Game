@@ -17,6 +17,10 @@ export const GameTimer = () => {
     const [rounds] = useRecoilState(roundsState)
 
     const lastRound = rounds[rounds.length - 1]
+    const roundInterval = config.next_round_seconds || 300
+    const remainTime = lastRound
+        ? (lastRound.close_time - currentTime) / 1000
+        : roundInterval
 
     return (
         <HStack
@@ -33,18 +37,16 @@ export const GameTimer = () => {
                 h="3rem"
             >
                 <Heading fontSize="24">
-                    {numberToTime(
-                        Math.floor(
-                            lastRound
-                                ? (lastRound.close_time - currentTime) / 1000
-                                : 0
-                        )
-                    )}
+                    {numberToTime(Math.floor(remainTime))}
                 </Heading>
-                <Heading fontSize="24">{`${
-                    (config.next_round_seconds || 300) / 60
-                }m`}</Heading>
-                <BsHourglassTop size={35} />
+                <Heading fontSize="24">{`${roundInterval / 60}m`}</Heading>
+                {remainTime < roundInterval / 3 ? (
+                    <BsHourglassBottom size={35} />
+                ) : remainTime > roundInterval / 3 ? (
+                    <BsHourglassTop size={35} />
+                ) : (
+                    <BsHourglassSplit size={35} />
+                )}
             </Center>
             <IconButton
                 rounded="1em"
