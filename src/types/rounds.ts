@@ -13,4 +13,7 @@ export type TRound = {
     bull_amount: number
     bear_amount: number
     current_time: number
+    open_price: number
+    close_price: number
+    winner: string
 }

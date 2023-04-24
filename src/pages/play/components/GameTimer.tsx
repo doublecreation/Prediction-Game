@@ -19,9 +19,8 @@ export const GameTimer = () => {
     const lastRound = rounds[rounds.length - 1]
     const roundInterval = config.next_round_seconds || 300
     const remainTime = lastRound
-        ? (lastRound.close_time - currentTime) / 1000
+        ? (lastRound.open_time - currentTime) / 1000
         : roundInterval
-
     return (
         <HStack
             pos={{ base: "relative", md: "absolute" }}

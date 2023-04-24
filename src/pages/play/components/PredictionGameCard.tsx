@@ -74,10 +74,10 @@ export const PredictionGameCard = ({
     const gameStatus: TRoundsStatus = useMemo(() => {
         const { open_time, close_time } = round
         const roundInterval = config.next_round_seconds || 0
-        if (currentTime < open_time) return "later"
-        if (currentTime > open_time && currentTime < close_time) return "next"
-        const liveTime = currentTime - roundInterval
-        if (liveTime > open_time && liveTime < close_time) return "live"
+        const biddingTime = currentTime + roundInterval * 1e3
+        if (biddingTime < open_time) return "later"
+        if (biddingTime > open_time && biddingTime < close_time) return "next"
+        if (currentTime > open_time && currentTime < close_time) return "live"
         return "expired"
     }, [currentTime, config])
 
@@ -114,7 +114,13 @@ export const PredictionGameCard = ({
                         ? "black"
                         : "white"
                 }
-                bg={gameStatus === "expired" ? "transparent" : "#00AAFF"}
+                bg={
+                    gameStatus === "expired"
+                        ? "transparent"
+                        : gameStatus === "live"
+                        ? "#00b932"
+                        : "#00AAFF"
+                }
                 _dark={{
                     bg:
                         gameStatus === "next"
@@ -335,7 +341,7 @@ export const PredictionGameCard = ({
                             <Text fontSize="13">Last Price</Text>
                             <Flex justifyContent="space-between">
                                 <Heading fontSize="26">$0.00</Heading>
-                                <Tag>$0.00</Tag>
+                                <Text>$0.00</Text>
                             </Flex>
                             <Flex
                                 pt={3}
@@ -382,8 +388,12 @@ export const PredictionGameCard = ({
                         >
                             <Text fontSize="13">Last Price</Text>
                             <Flex justifyContent="space-between">
-                                <Heading fontSize="26">$0.00</Heading>
-                                <Tag>$0.00</Tag>
+                                <Heading fontSize="26">{`$${
+                                    round.close_price || 0
+                                }`}</Heading>
+                                <Text>{`${
+                                    round.close_price - round.open_price
+                                }`}</Text>
                             </Flex>
                             <Flex
                                 pt={3}
