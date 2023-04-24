@@ -3,33 +3,21 @@ import {
     type ButtonProps,
     Button,
     Text,
-    Avatar,
     IconButton,
     useBreakpoint,
     useClipboard,
     VStack,
     HStack,
-    useColorModeValue,
-    Spacer
+    useColorModeValue
 } from "@chakra-ui/react"
-import { WalletStatus } from "@cosmos-kit/core"
-import { useChain, useManager } from "@cosmos-kit/react"
-import {
-    animate,
-    AnimatePresence,
-    motion,
-    MotionValue,
-    useMotionValue,
-    type Variants
-} from "framer-motion"
+import { useChain } from "@cosmos-kit/react"
+import { AnimatePresence, motion, type Variants } from "framer-motion"
 import truncateAddress from "utils/ui/truncateAddress"
-import { type FC, useEffect } from "react"
+import { type FC } from "react"
 import { FaClipboardList } from "react-icons/fa"
 import { BiLogOut } from "react-icons/bi"
-import { useLocalStorageState } from "ahooks"
 import { toast } from "react-toastify"
-import { ChainInfo } from "../constants"
-import { useRecoilState } from "recoil"
+import { ConnectedChain } from "../constants"
 import useWalletConnect from "hooks/useWalletConnect"
 
 export type ConnectButtonProps = ButtonProps & {
@@ -83,7 +71,7 @@ export const walletToolbarItemVariants: Variants = {
 }
 
 const ConnectButton: FC<ConnectButtonProps> = () => {
-    const { address, isWalletConnected } = useChain(ChainInfo.chain_name)
+    const { address, isWalletConnected } = useChain(ConnectedChain)
 
     const { connect, disconnect } = useWalletConnect()
 

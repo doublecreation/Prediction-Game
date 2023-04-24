@@ -1,22 +1,40 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { useRecoilState } from "recoil"
 import { btcPriceState } from "state/btcPriceState"
 import { balanceState } from "state/userInfo"
+import { configState, currentTimeState, roundsState } from "state/roundsState"
 import useContract from "hooks/useContract"
+import { BackendUrl } from "constants/basic"
 
 export default function Updater(): null {
     const [, setBtcPrice] = useRecoilState(btcPriceState)
+    const [, setRounds] = useRecoilState(roundsState)
     const [, setBalance] = useRecoilState(balanceState)
+    const [config, setConfig] = useRecoilState(configState)
+    const [, setCurrentTime] = useRecoilState(currentTimeState)
+
+    const [timeTicker, setTimeTicker] = useState(0)
+    const [timeDiff, setTimeDiff] = useState(0)
+
+    useEffect(() => {
+        setInterval(() => {
+            setTimeTicker((prev) => prev + 1)
+        }, 500)
+    }, [])
+
+    useEffect(() => {
+        const now = Number(new Date())
+        setCurrentTime(now - timeDiff)
+    }, [timeTicker, timeDiff])
+
     const { getBalance } = useContract()
 
-    const { data: btcPriceResponse } = useQuery({
-        queryKey: ["btcPrice"],
+    const { data: gameInfo } = useQuery({
+        queryKey: ["gameInfo"],
         queryFn: () =>
-            axios
-                .get("https://api.coingecko.com/api/v3/coins/bitcoin")
-                .then((res) => res.data),
+            axios.get(`${BackendUrl}/game-info`).then((res) => res.data),
         refetchInterval: 1000 * 10
     })
 
@@ -26,34 +44,44 @@ export default function Updater(): null {
         refetchInterval: 1000
     })
 
+    const { data: configResponse } = useQuery({
+        queryKey: ["config"],
+        queryFn: () =>
+            axios.get(`${BackendUrl}/config`).then((res) => res.data),
+        retry: true
+    })
+
+    useEffect(() => setConfig(configResponse?.config || {}), [configResponse])
+
     useEffect(() => {
-        if (btcPriceResponse?.market_data) {
-            const priceNumber =
-                btcPriceResponse.market_data.current_price?.usd || 0
-            const price = priceNumber.toLocaleString("en-US", {
-                maximumFractionDigits: 3
-            })
-            const priceChangeNumber =
-                Math.round(
-                    (btcPriceResponse.market_data
-                        .price_change_percentage_1h_in_currency?.usd || 0) *
-                        1000
-                ) / 1000
-            const priceChange =
-                priceChangeNumber === 0
-                    ? ""
-                    : priceChangeNumber > 0
-                    ? `+${priceChangeNumber}%`
-                    : `${priceChangeNumber}%`
-            const state =
-                priceChangeNumber > 0 ? 1 : priceChangeNumber < 0 ? -1 : 0
-            setBtcPrice({
-                price,
-                priceChange,
-                state
-            })
+        if (!gameInfo) return
+        if (gameInfo.btcPrice) setBtcPrice(gameInfo.btcPrice)
+        if (gameInfo.rounds?.length) {
+            const currentTime = Number(gameInfo.rounds[0].current_time) / 1e6
+            const now = Number(new Date())
+            console.log("debug", currentTime)
+            setTimeDiff(now - currentTime)
+            setRounds(
+                (
+                    gameInfo.rounds?.map((round) => {
+                        const open_time = Number(round.open_time) / 1e6
+                        const close_time = Number(round.close_time) / 1e6
+
+                        return {
+                            ...round,
+                            id: Number(round.id),
+                            bid_time: Number(round.bid_time) / 1e6,
+                            open_time,
+                            close_time,
+                            bull_amount: Number(round.bull_amount),
+                            bear_amount: Number(round.bear_amount),
+                            current_time: currentTime
+                        }
+                    }) || []
+                ).reverse()
+            )
         }
-    }, [btcPriceResponse])
+    }, [gameInfo, configResponse])
 
     useEffect(() => {
         if (balanceResopnse && !isNaN(balanceResopnse))

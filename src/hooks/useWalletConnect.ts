@@ -1,5 +1,5 @@
 import { useChain } from "@cosmos-kit/react"
-import { ChainInfo } from "../constants"
+import { ConnectedChain } from "../constants"
 import { useCallback, useEffect } from "react"
 import { WalletStatus } from "@cosmos-kit/core"
 import { useClipboard } from "@chakra-ui/react"
@@ -12,7 +12,7 @@ const useWalletConnect = () => {
         openView,
         isWalletConnected,
         status: walletStatus
-    } = useChain(ChainInfo.chain_name)
+    } = useChain(ConnectedChain)
     const { setValue } = useClipboard("")
 
     const [connectedWalletStorage, setConnectedWalletStorage] =

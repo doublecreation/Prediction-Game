@@ -1,16 +1,22 @@
 import { getCosmWasmClient } from "@sei-js/core"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useChain } from "@cosmos-kit/react"
 import { ExtendedHttpEndpoint } from "@cosmos-kit/core"
 import { cosmos } from "juno-network"
 import { coins } from "@cosmjs/proto-signing"
-import { AssetInfo, ChainInfo } from "../constants"
+import { AssetInfo, ChainInfo, ConnectedChain } from "../constants"
 import { toMicroAmount } from "utils/tokens/coins"
 import { StdFee } from "@cosmjs/stargate"
 
 const useContract = () => {
-    const { getRpcEndpoint, address, getSigningCosmWasmClient } = useChain(
-        ChainInfo.chain_name
+    const { getRpcEndpoint, address, getSigningCosmWasmClient, chain } =
+        useChain(ConnectedChain)
+
+    const currentChain = useMemo(
+        () => ({
+            denom: chain?.fees?.fee_tokens?.[0]?.denom || "usei"
+        }),
+        [chain]
     )
 
     const getRpcEndpointString = useCallback(async () => {
@@ -48,11 +54,11 @@ const useContract = () => {
         // fetch balance
         const balance = await client.cosmos.bank.v1beta1.balance({
             address,
-            denom: AssetInfo.assets[0].denom_units[0].denom
+            denom: currentChain.denom
         })
 
         return Number(balance?.balance?.amount || 0) / 1e6
-    }, [address, getRpcEndpointString])
+    }, [address, getRpcEndpointString, currentChain])
 
     const runExecute = useCallback(
         async (
@@ -67,8 +73,7 @@ const useContract = () => {
             if (!address) return
             const executeMemo = option?.memo || ""
             const executeFunds = option?.funds || ""
-            const executeDenom =
-                option?.denom || AssetInfo.assets[0].denom_units[0].denom
+            const executeDenom = option?.denom || currentChain.denom
 
             const fee: StdFee = {
                 amount: [

@@ -5,4 +5,4 @@ export const FuzioContract =
     "sei17thak4mluh3v98ek7yv64rul9zecpaqpdhr3szgspxdvzk22dyxsrahms8"
 
 export const FuzioOptionContract =
-    "sei17mx72t24djeh9vcndu4gnl04s4txca6mmdjsfxe60rzllm58a5tsn4hawc"
+    "juno1v2plkhu9q495vh40n8c6sgf00rj8fwqxktqcncjyux79h699px9sfejkv7"

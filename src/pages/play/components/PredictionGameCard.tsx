@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import {
     Text,
     Flex,
@@ -26,24 +26,27 @@ import { currentVotingState } from "state/voteState"
 import { FaArrowLeft } from "react-icons/fa"
 import { balanceState } from "state/userInfo"
 import { SwapIcon } from "components/Assets/SwapIcon"
+import { TRound, TRoundsStatus } from "types"
+import { configState, currentTimeState } from "state/roundsState"
 
 dayjs.extend(duration)
 
 export const PredictionGameCard = ({
-    gameStatus,
-    openView,
     connect,
     address,
-    time
+    time,
+    round
 }: {
-    gameStatus: "expired" | "live" | "next" | "later" | "calculating"
-    openView: () => void
     connect: () => void
     address?: string
     time?: number
+    round: TRound
 }) => {
     const [votingState, setVotingState] = useRecoilState(currentVotingState)
     const [balance] = useRecoilState(balanceState)
+    const [currentTime] = useRecoilState(currentTimeState)
+    const [config] = useRecoilState(configState)
+
     const [inputValue, setInputValue] = useState<number | string>("")
     // const gameIcon = useMemo(() => {
     //   switch (gameStatus) {
@@ -68,15 +71,19 @@ export const PredictionGameCard = ({
     //     dayjs().add(5, "m").unix()
     //   )
     // })
+    const gameStatus: TRoundsStatus = useMemo(() => {
+        const { open_time, close_time } = round
+        const roundInterval = config.next_round_seconds || 0
+        if (currentTime < open_time) return "later"
+        if (currentTime > open_time && currentTime < close_time) return "next"
+        const liveTime = currentTime - roundInterval
+        if (liveTime > open_time && liveTime < close_time) return "live"
+        return "expired"
+    }, [currentTime, config])
 
     const handleChangeInputValue = (event) => {
         event.preventDefault()
         setInputValue(event.target.value)
-    }
-
-    const handleConnectWallet = () => {
-        if (address) return
-        openView()
     }
 
     return (
@@ -160,7 +167,7 @@ export const PredictionGameCard = ({
                         : "Set Position"}
                 </Text>
                 <Spacer />
-                <Text>#99999</Text>
+                <Text>{`#${round.id}`}</Text>
             </Flex>
             {gameStatus !== "next" || votingState === "none" ? (
                 <>

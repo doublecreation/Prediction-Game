@@ -30,19 +30,19 @@ import { useRef, useCallback, useState, useEffect } from "react"
 import { Helmet } from "react-helmet"
 import { motion } from "framer-motion"
 import { useChain } from "@cosmos-kit/react"
-import { ChainInfo } from "../../constants"
+import { ConnectedChain } from "../../constants"
 import useWalletConnect from "hooks/useWalletConnect"
+import { useRecoilState } from "recoil"
+import { roundsState } from "state/roundsState"
 
 const Prediction = () => {
-    const {
-        address,
-        openView,
-        status: walletStatus
-    } = useChain(ChainInfo.chain_name)
+    const { address } = useChain(ConnectedChain)
     const [swiper, setSwiper] = useState<SwiperRef>()
     const { connect } = useWalletConnect()
     const prevRef = useRef()
     const nextRef = useRef()
+    const [rounds] = useRecoilState(roundsState)
+    console.log("debug rounds", rounds)
 
     useEffect(() => {
         if (swiper) {
@@ -142,24 +142,21 @@ const Prediction = () => {
                 initialSlide={3}
                 // ref={sliderRef}
             >
-                {["expired", "expired", "live", "next", "later"].map(
-                    (status, index) => (
-                        <SwiperSlide
-                            key={index}
-                            style={{
-                                justifyContent: "center",
-                                display: "flex"
-                            }}
-                        >
-                            <PredictionGameCard
-                                gameStatus={status as any}
-                                openView={openView}
-                                connect={connect}
-                                address={address}
-                            />
-                        </SwiperSlide>
-                    )
-                )}
+                {rounds.map((round, index) => (
+                    <SwiperSlide
+                        key={index}
+                        style={{
+                            justifyContent: "center",
+                            display: "flex"
+                        }}
+                    >
+                        <PredictionGameCard
+                            round={round}
+                            connect={connect}
+                            address={address}
+                        />
+                    </SwiperSlide>
+                ))}
             </Swiper>
         </Flex>
     )
