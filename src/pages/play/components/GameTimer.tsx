@@ -36,7 +36,7 @@ export const GameTimer = () => {
                 h="3rem"
             >
                 <Heading fontSize="24">
-                    {numberToTime(Math.floor(remainTime))}
+                    {numberToTime(Math.max(Math.floor(remainTime), 0))}
                 </Heading>
                 <Heading fontSize="24">{`${roundInterval / 60}m`}</Heading>
                 {remainTime < roundInterval / 3 ? (

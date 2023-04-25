@@ -5,6 +5,13 @@ export type TRoundsStatus =
     | "later"
     | "calculating"
 
+export type BetUserInfo = {
+    amount: string
+    direction: string
+    player: string
+    round_id: string
+}
+
 export type TRound = {
     id: number
     bid_time: number
@@ -16,4 +23,5 @@ export type TRound = {
     open_price: number
     close_price: number
     winner: string
+    users: BetUserInfo[]
 }

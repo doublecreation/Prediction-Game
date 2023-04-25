@@ -15,3 +15,8 @@ export const currentTimeState = atom<number>({
     default: 0,
     key: "currentTimeState"
 })
+
+export const remainTimeState = atom<number>({
+    default: 0,
+    key: "remainTimeState"
+})

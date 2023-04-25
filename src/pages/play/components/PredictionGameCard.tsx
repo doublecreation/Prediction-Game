@@ -28,8 +28,20 @@ import { balanceState } from "state/userInfo"
 import { SwapIcon } from "components/Assets/SwapIcon"
 import { TRound, TRoundsStatus } from "types"
 import { configState, currentTimeState } from "state/roundsState"
+import { btcPriceState } from "state/btcPriceState"
+import useContract from "hooks/useContract"
+import {
+    ConnectedChain,
+    FuzioContract,
+    FuzioOptionContract
+} from "../../../constants"
+import { useChain } from "@cosmos-kit/react"
+import { toast } from "react-toastify"
 
 dayjs.extend(duration)
+
+const getColorByNumber = (num: number): string =>
+    num > 0 ? "#00dd31" : num < 0 ? "#dd0000" : "white"
 
 export const PredictionGameCard = ({
     connect,
@@ -46,7 +58,12 @@ export const PredictionGameCard = ({
     const [balance] = useRecoilState(balanceState)
     const [currentTime] = useRecoilState(currentTimeState)
     const [config] = useRecoilState(configState)
+    const [btcPrice] = useRecoilState(btcPriceState)
 
+    const { createExecuteMessage, runExecute } = useContract()
+    const { getSigningCosmWasmClient } = useChain(ConnectedChain)
+
+    const [isPending, setIsPending] = useState(false)
     const [inputValue, setInputValue] = useState<number | string>("")
     // const gameIcon = useMemo(() => {
     //   switch (gameStatus) {
@@ -78,12 +95,82 @@ export const PredictionGameCard = ({
         if (biddingTime < open_time) return "later"
         if (biddingTime > open_time && biddingTime < close_time) return "next"
         if (currentTime > open_time && currentTime < close_time) return "live"
+        if (round.winner === undefined) return "calculating"
         return "expired"
-    }, [currentTime, config])
+    }, [currentTime, config, round])
+
+    const prizeAmount =
+        ((round.bear_amount || 0) + (round.bull_amount || 0)) / 1e6
+
+    const { lockedPrice, direction, isWinner } = useMemo(() => {
+        if (!address) return { lockedPrice: 0, direction: "", isWinner: false }
+        const users = round.users || []
+        if (!users.length)
+            return { lockedPrice: 0, direction: "", isWinner: false }
+        const myInfo = users.find((user) => user.player === address)
+        if (!myInfo) return { lockedPrice: 0, direction: "", isWinner: false }
+        return {
+            lockedPrice: Number(myInfo.amount) / 1e6,
+            direction: myInfo.direction,
+            isWinner: myInfo.direction === round.winner
+        }
+    }, [round, address])
 
     const handleChangeInputValue = (event) => {
         event.preventDefault()
         setInputValue(event.target.value)
+    }
+
+    const handleConfirm = async () => {
+        if (votingState === "none" || !address || !inputValue) return
+
+        setIsPending(true)
+
+        const transactions = [
+            createExecuteMessage({
+                senderAddress: address,
+                contractAddress: FuzioContract,
+                message: {
+                    increase_allowance: {
+                        spender: FuzioOptionContract,
+                        amount: `${Number(inputValue) * 1e6}`
+                    }
+                }
+            }),
+            createExecuteMessage({
+                senderAddress: address,
+                contractAddress: FuzioOptionContract,
+                message: {
+                    [votingState === "up" ? "bet_bull" : "bet_bear"]: {
+                        round_id: `${round.id}`,
+                        amount: `${Number(inputValue) * 1e6}`
+                    }
+                }
+            })
+        ]
+        const signingCosmWasmClient = await getSigningCosmWasmClient()
+        signingCosmWasmClient
+            .signAndBroadcast(address, transactions, "auto")
+            .then(() => {
+                toast.success("Transaction Success!")
+                setVotingState("none")
+            })
+            .catch((e) => {
+                toast.error(e.message)
+            })
+            .finally(() => setIsPending(false))
+    }
+
+    const handleCollectWinnings = async () => {
+        setIsPending(true)
+        runExecute(FuzioOptionContract, {
+            collection_winning_round: {
+                round_id: `${round.id}`
+            }
+        })
+            .then(() => toast.success("Successfully Collected."))
+            .catch((e) => toast.error(e.message))
+            .finally(() => setIsPending(false))
     }
 
     return (
@@ -119,6 +206,8 @@ export const PredictionGameCard = ({
                         ? "transparent"
                         : gameStatus === "live"
                         ? "#00b932"
+                        : gameStatus === "calculating"
+                        ? "#ffcf3f"
                         : "#00AAFF"
                 }
                 _dark={{
@@ -193,31 +282,65 @@ export const PredictionGameCard = ({
                             </clipPath>
                         </defs>
                     </svg>
-                    <VStack
-                        top="3.5rem"
-                        left="calc(50% - 7.25rem)"
-                        w="14.5rem"
-                        zIndex="2"
-                        pos="absolute"
-                    >
-                        <Heading
-                            fontSize="20"
-                            pt={5}
-                            pb={1}
-                            color={
-                                gameStatus === "next" || gameStatus === "later"
-                                    ? "transparent"
-                                    : "#00283A"
-                            }
-                            clipPath="url(#upClip)"
-                            bg={"#B1B1B1"}
-                            width="70%"
-                            height="100%"
-                            textAlign="center"
+                    {isWinner && direction === "bull" ? (
+                        <HStack
+                            top="3.5rem"
+                            left="0"
+                            w="100%"
+                            zIndex="2"
+                            pos="absolute"
+                            backgroundColor="#00B3FF"
+                            p={1}
+                            alignItems="center"
+                            justifyContent="center"
+                            gap={1}
                         >
-                            UP
-                        </Heading>
-                    </VStack>
+                            <Image src="/assets/cup.png" />
+                            <Button
+                                color="white"
+                                backgroundColor="#005b77"
+                                border="1px solid white"
+                                onClick={handleCollectWinnings}
+                                disabled={isPending}
+                            >
+                                Collect Winnings
+                            </Button>
+                        </HStack>
+                    ) : (
+                        <VStack
+                            top="3.5rem"
+                            left="calc(50% - 7.25rem)"
+                            w="14.5rem"
+                            zIndex="2"
+                            pos="absolute"
+                        >
+                            <Heading
+                                fontSize="20"
+                                pt={5}
+                                pb={1}
+                                color={
+                                    gameStatus === "later"
+                                        ? "transparent"
+                                        : gameStatus === "next"
+                                        ? lockedPrice
+                                            ? "white"
+                                            : "transparent"
+                                        : "#00283A"
+                                }
+                                clipPath="url(#upClip)"
+                                bg={
+                                    round.close_price - round.open_price > 0
+                                        ? "#00dd31"
+                                        : "#B1B1B1"
+                                }
+                                width="70%"
+                                height="100%"
+                                textAlign="center"
+                            >
+                                UP
+                            </Heading>
+                        </VStack>
+                    )}
                     {gameStatus === "next" && (
                         <Flex
                             w="14.5rem"
@@ -238,13 +361,15 @@ export const PredictionGameCard = ({
                             color="white"
                         >
                             <VStack w="full" pt={1}>
-                                {address && (
+                                {address && !lockedPrice && (
                                     <Button
                                         colorScheme="green"
                                         shadow="md"
                                         w="full"
                                         rounded="1em"
-                                        onClick={() => setVotingState("up")}
+                                        onClick={() => {
+                                            setVotingState("up")
+                                        }}
                                     >
                                         UP
                                     </Button>
@@ -254,23 +379,29 @@ export const PredictionGameCard = ({
                                     fontSize="16"
                                     justifyContent="space-between"
                                     w="100%"
+                                    flexDirection={
+                                        lockedPrice ? "column" : "row"
+                                    }
+                                    alignItems="center"
                                 >
                                     <Text>Prize Pool:</Text>
                                     <HStack spacing={0.5}>
-                                        <Text>20</Text>
+                                        <Text>{prizeAmount}</Text>
                                         <Image
                                             w="1.5rem"
                                             src="/assets/logo_transparent.png"
                                         />
                                     </HStack>
                                 </Flex>
-                                {address && (
+                                {address && !lockedPrice && (
                                     <Button
                                         colorScheme="red"
                                         shadow="md"
                                         w="full"
                                         rounded="1em"
-                                        onClick={() => setVotingState("down")}
+                                        onClick={() => {
+                                            setVotingState("down")
+                                        }}
                                     >
                                         DOWN
                                     </Button>
@@ -340,8 +471,22 @@ export const PredictionGameCard = ({
                         >
                             <Text fontSize="13">Last Price</Text>
                             <Flex justifyContent="space-between">
-                                <Heading fontSize="26">$0.00</Heading>
-                                <Text>$0.00</Text>
+                                <Heading
+                                    fontSize="26"
+                                    color={getColorByNumber(
+                                        btcPrice.priceNumber -
+                                            (round.open_price || 0)
+                                    )}
+                                >{`$${btcPrice.price}`}</Heading>
+                                <Text
+                                    color={getColorByNumber(
+                                        btcPrice.priceNumber -
+                                            (round.open_price || 0)
+                                    )}
+                                >{`$${
+                                    btcPrice.priceNumber -
+                                    (round.open_price || 0)
+                                }`}</Text>
                             </Flex>
                             <Flex
                                 pt={3}
@@ -349,7 +494,7 @@ export const PredictionGameCard = ({
                                 justifyContent="space-between"
                             >
                                 <Text>Locked Price:</Text>
-                                <Text>$0.00</Text>
+                                <Text>{`$${lockedPrice}`}</Text>
                             </Flex>
                             <Flex
                                 fontWeight="600"
@@ -358,7 +503,7 @@ export const PredictionGameCard = ({
                             >
                                 <Text>Prize Pool:</Text>
                                 <HStack spacing={0.5}>
-                                    <Text>20</Text>
+                                    <Text>{prizeAmount}</Text>
                                     <Image
                                         w="1.5rem"
                                         src="/assets/logo_transparent.png"
@@ -387,11 +532,26 @@ export const PredictionGameCard = ({
                             color="white"
                         >
                             <Text fontSize="13">Last Price</Text>
-                            <Flex justifyContent="space-between">
-                                <Heading fontSize="26">{`$${
+                            <Flex
+                                justifyContent="space-between"
+                                alignItems="center"
+                            >
+                                <Heading
+                                    fontSize="26"
+                                    color={getColorByNumber(
+                                        round.close_price - round.open_price
+                                    )}
+                                >{`$${Number(
                                     round.close_price || 0
-                                }`}</Heading>
-                                <Text>{`${
+                                ).toLocaleString("en-US", {
+                                    maximumFractionDigits: 3
+                                })}`}</Heading>
+                                <Text
+                                    fontWeight="bold"
+                                    color={getColorByNumber(
+                                        round.close_price - round.open_price
+                                    )}
+                                >{`$${
                                     round.close_price - round.open_price
                                 }`}</Text>
                             </Flex>
@@ -401,7 +561,7 @@ export const PredictionGameCard = ({
                                 justifyContent="space-between"
                             >
                                 <Text>Locked Price:</Text>
-                                <Text>$0.00</Text>
+                                <Text>{`$${lockedPrice}`}</Text>
                             </Flex>
                             <Flex
                                 fontWeight="600"
@@ -410,7 +570,7 @@ export const PredictionGameCard = ({
                             >
                                 <Text>Prize Pool:</Text>
                                 <HStack spacing={0.5}>
-                                    <Text>20</Text>
+                                    <Text>{prizeAmount}</Text>
                                     <Image
                                         w="1.5rem"
                                         src="/assets/logo_transparent.png"
@@ -419,31 +579,65 @@ export const PredictionGameCard = ({
                             </Flex>
                         </Flex>
                     )}
-                    <VStack
-                        bottom="2rem"
-                        left="calc(50% - 7.25rem)"
-                        w="14.5rem"
-                        zIndex="2"
-                        pos="absolute"
-                    >
-                        <Heading
-                            fontSize="20"
-                            pb={5}
-                            pt={1}
-                            color={
-                                gameStatus === "next" || gameStatus === "later"
-                                    ? "transparent"
-                                    : "#00283A"
-                            }
-                            clipPath="url(#downClip)"
-                            bg={"#B1B1B1"}
-                            width="70%"
-                            height="100%"
-                            textAlign="center"
+                    {isWinner && direction === "bear" ? (
+                        <HStack
+                            bottom="2rem"
+                            left="0"
+                            w="100%"
+                            zIndex="2"
+                            pos="absolute"
+                            backgroundColor="#00B3FF"
+                            p={1}
+                            alignItems="center"
+                            justifyContent="center"
+                            gap={1}
                         >
-                            DOWN
-                        </Heading>
-                    </VStack>
+                            <Image src="/assets/cup.png" />
+                            <Button
+                                color="white"
+                                backgroundColor="#005b77"
+                                border="1px solid white"
+                                onClick={handleCollectWinnings}
+                                disabled={isPending}
+                            >
+                                Collect Winnings
+                            </Button>
+                        </HStack>
+                    ) : (
+                        <VStack
+                            bottom="2rem"
+                            left="calc(50% - 7.25rem)"
+                            w="14.5rem"
+                            zIndex="2"
+                            pos="absolute"
+                        >
+                            <Heading
+                                fontSize="20"
+                                pb={5}
+                                pt={1}
+                                color={
+                                    gameStatus === "later"
+                                        ? "transparent"
+                                        : gameStatus === "next"
+                                        ? lockedPrice
+                                            ? "white"
+                                            : "transparent"
+                                        : "#00283A"
+                                }
+                                clipPath="url(#downClip)"
+                                bg={
+                                    round.close_price - round.open_price < 0
+                                        ? "#dd0000"
+                                        : "#B1B1B1"
+                                }
+                                width="70%"
+                                height="100%"
+                                textAlign="center"
+                            >
+                                DOWN
+                            </Heading>
+                        </VStack>
+                    )}
                 </>
             ) : (
                 <VStack
@@ -504,6 +698,8 @@ export const PredictionGameCard = ({
                         w="100%"
                         bg="#00B3FF"
                         colorScheme="blue"
+                        onClick={handleConfirm}
+                        disabled={isPending}
                     >
                         Confirm
                     </Button>

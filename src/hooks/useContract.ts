@@ -1,12 +1,31 @@
 import { getCosmWasmClient } from "@sei-js/core"
+import {
+    SigningCosmWasmClient,
+    MsgExecuteContractEncodeObject
+} from "@cosmjs/cosmwasm-stargate"
+import { toUtf8 } from "@cosmjs/encoding"
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx"
 import { useCallback, useMemo } from "react"
 import { useChain } from "@cosmos-kit/react"
 import { ExtendedHttpEndpoint } from "@cosmos-kit/core"
 import { cosmos } from "juno-network"
 import { coins } from "@cosmjs/proto-signing"
-import { AssetInfo, ChainInfo, ConnectedChain } from "../constants"
+import { Coin } from "@cosmjs/launchpad"
+import {
+    AssetInfo,
+    ChainInfo,
+    ConnectedChain,
+    FuzioContract
+} from "../constants"
 import { toMicroAmount } from "utils/tokens/coins"
 import { StdFee } from "@cosmjs/stargate"
+
+type CreateExecuteMessageArgs = {
+    senderAddress: string
+    message: Record<string, Record<string, string>>
+    contractAddress: string
+    funds?: Array<Coin>
+}
 
 const useContract = () => {
     const { getRpcEndpoint, address, getSigningCosmWasmClient, chain } =
@@ -47,18 +66,27 @@ const useContract = () => {
     const getBalance = useCallback(async () => {
         if (!address) return 0
         // get RPC client
-        const rpcEndpoint = await getRpcEndpointString()
-        const client = await cosmos.ClientFactory.createRPCQueryClient({
-            rpcEndpoint
-        })
+        // const rpcEndpoint = await getRpcEndpointString()
+        // const client = await cosmos.ClientFactory.createRPCQueryClient({
+        //     rpcEndpoint
+        // })
         // fetch balance
-        const balance = await client.cosmos.bank.v1beta1.balance({
-            address,
-            denom: currentChain.denom
+        // const balance = await client.cosmos.bank.v1beta1.balance({
+        //     address,
+        //     denom: currentChain.denom
+        // })
+        const balance = await runQuery(FuzioContract, {
+            balance: { address }
         })
 
-        return Number(balance?.balance?.amount || 0) / 1e6
-    }, [address, getRpcEndpointString, currentChain])
+        // return Number(balance?.balance?.amount || 0) / 1e6
+        return Number(balance?.balance || 0) / 1e6
+    }, [
+        address,
+        // getRpcEndpointString,
+        runQuery,
+        currentChain
+    ])
 
     const runExecute = useCallback(
         async (
@@ -103,10 +131,29 @@ const useContract = () => {
         [getSigningCosmWasmClient, address]
     )
 
+    const createExecuteMessage = useCallback(
+        ({
+            senderAddress,
+            contractAddress,
+            message,
+            funds
+        }: CreateExecuteMessageArgs): MsgExecuteContractEncodeObject => ({
+            typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+            value: MsgExecuteContract.fromPartial({
+                sender: senderAddress,
+                contract: contractAddress,
+                msg: toUtf8(JSON.stringify(message)),
+                funds: funds || []
+            })
+        }),
+        []
+    )
+
     return {
         getBalance,
         runQuery,
-        runExecute
+        runExecute,
+        createExecuteMessage
     }
 }
 

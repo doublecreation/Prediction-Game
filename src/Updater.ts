@@ -4,7 +4,12 @@ import axios from "axios"
 import { useRecoilState } from "recoil"
 import { btcPriceState } from "state/btcPriceState"
 import { balanceState } from "state/userInfo"
-import { configState, currentTimeState, roundsState } from "state/roundsState"
+import {
+    configState,
+    currentTimeState,
+    remainTimeState,
+    roundsState
+} from "state/roundsState"
 import useContract from "hooks/useContract"
 import { BackendUrl } from "constants/basic"
 
@@ -14,9 +19,14 @@ export default function Updater(): null {
     const [, setBalance] = useRecoilState(balanceState)
     const [config, setConfig] = useRecoilState(configState)
     const [, setCurrentTime] = useRecoilState(currentTimeState)
+    const [, setRemainTime] = useRecoilState(remainTimeState)
 
     const [timeTicker, setTimeTicker] = useState(0)
     const [timeDiff, setTimeDiff] = useState(0)
+    const [remainTimeResponse, setRemainTimeResponse] = useState({
+        remain: 0,
+        time: Number(new Date())
+    })
 
     useEffect(() => {
         setInterval(() => {
@@ -58,8 +68,11 @@ export default function Updater(): null {
         if (gameInfo.btcPrice) setBtcPrice(gameInfo.btcPrice)
 
         const now = Number(new Date())
-        const currentTime = Number(gameInfo?.current_time || now)
+        const currentTime = Number(gameInfo?.currentTime || now)
         setTimeDiff(now - currentTime)
+        // setRemainTimeResponse({
+        //     remain: Number(gameInfo?.remainTime)
+        // })
 
         if (gameInfo.rounds?.length) {
             setRounds(
