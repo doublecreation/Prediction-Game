@@ -114,19 +114,22 @@ const useContract = () => {
             }
 
             const signingCosmWasmClient = await getSigningCosmWasmClient()
-            return signingCosmWasmClient.execute(
-                address,
-                contractAddress,
-                executeMsg,
-                fee,
-                executeMemo,
-                executeFunds
-                    ? coins(
-                          toMicroAmount(executeFunds, executeDenom),
-                          executeDenom
-                      )
-                    : undefined
-            )
+            return signingCosmWasmClient
+                .execute(
+                    address,
+                    contractAddress,
+                    executeMsg,
+                    fee,
+                    executeMemo,
+                    executeFunds
+                        ? coins(
+                              toMicroAmount(executeFunds, executeDenom),
+                              executeDenom
+                          )
+                        : undefined
+                )
+                .then((res) => res)
+                .catch((err) => console.error(err.message))
         },
         [getSigningCosmWasmClient, address]
     )

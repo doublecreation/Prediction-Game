@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
+import { useChain } from "@cosmos-kit/react"
 import { useRecoilState } from "recoil"
 import { btcPriceState } from "state/btcPriceState"
-import { balanceState } from "state/userInfo"
+import { balanceState, claimState } from "state/userInfo"
 import {
     configState,
     currentTimeState,
@@ -11,7 +12,9 @@ import {
     roundsState
 } from "state/roundsState"
 import useContract from "hooks/useContract"
-import { BackendUrl } from "constants/basic"
+import { BackendUrl, FuzioOptionContract, ConnectedChain } from "./constants"
+
+const FETCH_LIMIT = 10
 
 export default function Updater(): null {
     const [, setBtcPrice] = useRecoilState(btcPriceState)
@@ -19,20 +22,47 @@ export default function Updater(): null {
     const [, setBalance] = useRecoilState(balanceState)
     const [config, setConfig] = useRecoilState(configState)
     const [, setCurrentTime] = useRecoilState(currentTimeState)
-    const [, setRemainTime] = useRecoilState(remainTimeState)
+    const [, setClaimState] = useRecoilState(claimState)
+    // const [, setRemainTime] = useRecoilState(remainTimeState)
+    const { runQuery } = useContract()
 
     const [timeTicker, setTimeTicker] = useState(0)
     const [timeDiff, setTimeDiff] = useState(0)
-    const [remainTimeResponse, setRemainTimeResponse] = useState({
-        remain: 0,
-        time: Number(new Date())
-    })
+    const { address } = useChain(ConnectedChain)
+    // const [remainTimeResponse, setRemainTimeResponse] = useState({
+    //     remain: 0,
+    //     time: Number(new Date())
+    // })
 
     useEffect(() => {
         setInterval(() => {
             setTimeTicker((prev) => prev + 1)
         }, 500)
     }, [])
+
+    useEffect(() => {
+        if (!address) return
+        ;(async () => {
+            let result: any[] = []
+            const fetchClaimStatus = async (startAfter?: any) => {
+                const response = await runQuery(FuzioOptionContract, {
+                    get_claim_info_by_user: {
+                        player: address,
+                        start_after: startAfter,
+                        limit: FETCH_LIMIT
+                    }
+                })
+                    .then((res) => res.claim_info)
+                    .catch(() => [])
+                result = [...result, ...response]
+                if (response.length === FETCH_LIMIT) {
+                    await fetchClaimStatus(response[FETCH_LIMIT - 1].round_id)
+                }
+            }
+            await fetchClaimStatus()
+            setClaimState(result)
+        })()
+    }, [address])
 
     useEffect(() => {
         const now = Number(new Date())

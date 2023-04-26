@@ -22,7 +22,7 @@ import { CountdownTimer } from "./CountdownTimer"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import MotionFlex from "theme/motion/components/MotionFlex"
-import { currentVotingState } from "state/voteState"
+import { claimRoundIdState, currentVotingState } from "state/voteState"
 import { FaArrowLeft } from "react-icons/fa"
 import { balanceState } from "state/userInfo"
 import { SwapIcon } from "components/Assets/SwapIcon"
@@ -37,6 +37,7 @@ import {
 } from "../../../constants"
 import { useChain } from "@cosmos-kit/react"
 import { toast } from "react-toastify"
+import { IoClose } from "react-icons/io5"
 
 dayjs.extend(duration)
 
@@ -59,11 +60,13 @@ export const PredictionGameCard = ({
     const [currentTime] = useRecoilState(currentTimeState)
     const [config] = useRecoilState(configState)
     const [btcPrice] = useRecoilState(btcPriceState)
+    const [claimRoundId, setClaimRoundId] = useRecoilState(claimRoundIdState)
 
-    const { createExecuteMessage, runExecute } = useContract()
+    const { createExecuteMessage, runExecute, runQuery } = useContract()
     const { getSigningCosmWasmClient } = useChain(ConnectedChain)
 
     const [isPending, setIsPending] = useState(false)
+    const [claimableAmount, setClaimableAmount] = useState(0)
     const [inputValue, setInputValue] = useState<number | string>("")
     // const gameIcon = useMemo(() => {
     //   switch (gameStatus) {
@@ -115,6 +118,22 @@ export const PredictionGameCard = ({
             isWinner: myInfo.direction === round.winner
         }
     }, [round, address])
+
+    useEffect(() => {
+        if (address && votingState === "claim" && claimRoundId === round.id) {
+            ;(async () => {
+                const response = await runQuery(FuzioOptionContract, {
+                    my_pending_reward_round: {
+                        round_id: `${round.id}`,
+                        player: address
+                    }
+                })
+                    .then((res) => Number(res.pending_reward) / 1e6)
+                    .catch(() => 0)
+                setClaimableAmount(response)
+            })()
+        }
+    }, [address, round, votingState, claimRoundId])
 
     const handleChangeInputValue = (event) => {
         event.preventDefault()
@@ -185,86 +204,99 @@ export const PredictionGameCard = ({
             pos="relative"
             // whileHover={{ opacity: 1 }}
             opacity={
-                gameStatus === "next" ? 1 : votingState !== "none" ? 0.34 : 1
+                votingState === "none" ||
+                (votingState === "claim" && claimRoundId == round.id)
+                    ? 1
+                    : gameStatus === "next"
+                    ? 1
+                    : 0.34
             }
             style={{ transition: "opacity 0.5s" }}
         >
-            <Flex
-                px={2}
-                py={2}
-                align="center"
-                gap={1}
-                h="2rem"
-                w="full"
-                color={
-                    gameStatus === "next" || gameStatus === "later"
-                        ? "black"
-                        : "white"
-                }
-                bg={
-                    gameStatus === "expired"
-                        ? "transparent"
-                        : gameStatus === "live"
-                        ? "#00b932"
-                        : gameStatus === "calculating"
-                        ? "#ffcf3f"
-                        : "#00AAFF"
-                }
-                _dark={{
-                    bg:
-                        gameStatus === "next"
-                            ? "rgba(60,230,130, 1)"
-                            : "gray.600",
-                    color:
-                        gameStatus === "next"
-                            ? "gray.700"
-                            : gameStatus === "expired"
-                            ? "gray.300"
-                            : "rgba(60,230,130, 1)"
-                }}
-                position="relative"
-                _after={{
-                    content: '""',
-                    width: "100%",
-                    height: "6px",
-                    backgroundColor:
+            {claimRoundId !== round.id && (
+                <Flex
+                    px={2}
+                    py={2}
+                    align="center"
+                    gap={1}
+                    h="2rem"
+                    w="full"
+                    color={
+                        gameStatus === "next" || gameStatus === "later"
+                            ? "black"
+                            : "white"
+                    }
+                    bg={
                         gameStatus === "expired"
-                            ? "rgba(217, 217, 217, 0.5)"
-                            : "transparent",
-                    position: "absolute",
-                    left: 0,
-                    bottom: "-6px"
-                }}
-            >
-                {/* {gameIcon} */}
-                {gameStatus !== "next" || votingState === "none" ? (
-                    <Box
-                        w="1.2rem"
-                        h="1.2rem"
-                        rounded="full"
-                        bg={
+                            ? "transparent"
+                            : gameStatus === "live"
+                            ? "#00b932"
+                            : gameStatus === "calculating"
+                            ? "#ffcf3f"
+                            : "#00AAFF"
+                    }
+                    _dark={{
+                        bg:
+                            gameStatus === "next"
+                                ? "rgba(60,230,130, 1)"
+                                : "gray.600",
+                        color:
+                            gameStatus === "next"
+                                ? "gray.700"
+                                : gameStatus === "expired"
+                                ? "gray.300"
+                                : "rgba(60,230,130, 1)"
+                    }}
+                    position="relative"
+                    _after={{
+                        content: '""',
+                        width: "100%",
+                        height: "6px",
+                        backgroundColor:
                             gameStatus === "expired"
-                                ? "#B1B1B1"
-                                : gameStatus === "live"
-                                ? "#00DD31"
-                                : "white"
-                        }
-                    />
-                ) : (
-                    <Icon
-                        as={FaArrowLeft}
-                        onClick={() => setVotingState("none")}
-                    />
-                )}
-                <Text fontWeight="600">
-                    {gameStatus !== "next" || votingState === "none"
-                        ? gameStatus.toUpperCase()
-                        : "Set Position"}
-                </Text>
-                <Spacer />
-                <Text>{`#${round.id}`}</Text>
-            </Flex>
-            {gameStatus !== "next" || votingState === "none" ? (
+                                ? "rgba(217, 217, 217, 0.5)"
+                                : "transparent",
+                        position: "absolute",
+                        left: 0,
+                        bottom: "-6px"
+                    }}
+                >
+                    {/* {gameIcon} */}
+                    {gameStatus !== "next" ||
+                    votingState === "none" ||
+                    (votingState === "claim" && claimRoundId !== round.id) ? (
+                        <Box
+                            w="1.2rem"
+                            h="1.2rem"
+                            rounded="full"
+                            bg={
+                                gameStatus === "expired"
+                                    ? "#B1B1B1"
+                                    : gameStatus === "live"
+                                    ? "#00DD31"
+                                    : "white"
+                            }
+                        />
+                    ) : (
+                        <Icon
+                            as={FaArrowLeft}
+                            onClick={() => setVotingState("none")}
+                        />
+                    )}
+                    <Text fontWeight="600">
+                        {gameStatus !== "next" ||
+                        votingState === "none" ||
+                        (votingState === "claim" && claimRoundId !== round.id)
+                            ? gameStatus.toUpperCase()
+                            : "Set Position"}
+                    </Text>
+                    <Spacer />
+                    <Text>{`#${round.id}`}</Text>
+                </Flex>
+            )}
+            {votingState === "none" ||
+            (votingState === "claim" && claimRoundId !== round.id) ||
+            (gameStatus !== "next" && claimRoundId !== round.id) ? (
                 <>
                     <svg width="0" height="0">
                         <defs>
@@ -295,12 +327,15 @@ export const PredictionGameCard = ({
                             justifyContent="center"
                             gap={1}
                         >
-                            <Image src="/assets/cup.png" />
+                            <Image h="2.5rem" src="/assets/cup.png" />
                             <Button
                                 color="white"
                                 backgroundColor="#005b77"
                                 border="1px solid white"
-                                onClick={handleCollectWinnings}
+                                onClick={() => {
+                                    setVotingState("claim")
+                                    setClaimRoundId(round.id)
+                                }}
                                 disabled={isPending}
                             >
                                 Collect Winnings
@@ -592,12 +627,15 @@ export const PredictionGameCard = ({
                             justifyContent="center"
                             gap={1}
                         >
-                            <Image src="/assets/cup.png" />
+                            <Image h="2.5rem" src="/assets/cup.png" />
                             <Button
                                 color="white"
                                 backgroundColor="#005b77"
                                 border="1px solid white"
-                                onClick={handleCollectWinnings}
+                                onClick={() => {
+                                    setVotingState("claim")
+                                    setClaimRoundId(round.id)
+                                }}
                                 disabled={isPending}
                             >
                                 Collect Winnings
@@ -639,6 +677,48 @@ export const PredictionGameCard = ({
                         </VStack>
                     )}
                 </>
+            ) : votingState === "claim" && claimRoundId === round.id ? (
+                <VStack
+                    w="full"
+                    h="full"
+                    alignItems="center"
+                    justifyContent="center"
+                    gap={3}
+                    color="white"
+                    px={5}
+                >
+                    <HStack
+                        color="white"
+                        w="100%"
+                        justifyContent="space-between"
+                        position="relative"
+                    >
+                        <Text>Collect Winnings</Text>
+                        <Icon
+                            as={IoClose}
+                            onClick={() => setVotingState("none")}
+                        />
+                    </HStack>
+                    <Image w="30%" src="/assets/cup.png" />
+                    <HStack
+                        w="full"
+                        justifyContent="space-between"
+                        alignItems="center"
+                    >
+                        <Text>Collecting</Text>
+                        <Text>{claimableAmount}</Text>
+                    </HStack>
+                    <Text>{`From round #${round.id}`}</Text>
+                    <Button
+                        w="full"
+                        color="white"
+                        backgroundColor="#00b3ff"
+                        border="1px solid white"
+                        onClick={handleCollectWinnings}
+                    >
+                        Confirm
+                    </Button>
+                </VStack>
             ) : (
                 <VStack
                     top="3.5rem"
