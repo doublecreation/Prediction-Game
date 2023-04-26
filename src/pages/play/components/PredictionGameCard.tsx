@@ -24,7 +24,7 @@ import duration from "dayjs/plugin/duration"
 import MotionFlex from "theme/motion/components/MotionFlex"
 import { claimRoundIdState, currentVotingState } from "state/voteState"
 import { FaArrowLeft } from "react-icons/fa"
-import { balanceState } from "state/userInfo"
+import { balanceState, claimState } from "state/userInfo"
 import { SwapIcon } from "components/Assets/SwapIcon"
 import { TRound, TRoundsStatus } from "types"
 import { configState, currentTimeState } from "state/roundsState"
@@ -61,6 +61,7 @@ export const PredictionGameCard = ({
     const [config] = useRecoilState(configState)
     const [btcPrice] = useRecoilState(btcPriceState)
     const [claimRoundId, setClaimRoundId] = useRecoilState(claimRoundIdState)
+    const [claimed] = useRecoilState(claimState)
 
     const { createExecuteMessage, runExecute, runQuery } = useContract()
     const { getSigningCosmWasmClient } = useChain(ConnectedChain)
@@ -119,8 +120,19 @@ export const PredictionGameCard = ({
         }
     }, [round, address])
 
+    const isClaimedRound = useMemo(() => {
+        const targetRound = claimed.find(
+            (claimedRound) => Number(claimedRound.round_id) === round.id
+        )
+        return !!targetRound
+    }, [claimed])
+
     useEffect(() => {
-        if (address && votingState === "claim" && claimRoundId === round.id) {
+        if (!address) {
+            setVotingState("none")
+            return
+        }
+        if (votingState === "claim" && claimRoundId === round.id) {
             ;(async () => {
                 const response = await runQuery(FuzioOptionContract, {
                     my_pending_reward_round: {
@@ -187,9 +199,16 @@ export const PredictionGameCard = ({
                 round_id: `${round.id}`
             }
         })
-            .then(() => toast.success("Successfully Collected."))
+            .then(() => {
+                toast.success("Successfully Collected.")
+                setVotingState("none")
+            })
             .catch((e) => toast.error(e.message))
-            .finally(() => setIsPending(false))
+            .finally(() => {
+                setIsPending(false)
+                setClaimRoundId("")
+                setVotingState("none")
+            })
     }
 
     return (
@@ -314,7 +333,7 @@ export const PredictionGameCard = ({
                             </clipPath>
                         </defs>
                     </svg>
-                    {isWinner && direction === "bull" ? (
+                    {isWinner && direction === "bull" && !isClaimedRound ? (
                         <HStack
                             top="3.5rem"
                             left="0"
@@ -614,7 +633,7 @@ export const PredictionGameCard = ({
                             </Flex>
                         </Flex>
                     )}
-                    {isWinner && direction === "bear" ? (
+                    {isWinner && direction === "bear" && !isClaimedRound ? (
                         <HStack
                             bottom="2rem"
                             left="0"
@@ -715,6 +734,7 @@ export const PredictionGameCard = ({
                         backgroundColor="#00b3ff"
                         border="1px solid white"
                         onClick={handleCollectWinnings}
+                        disabled={isPending}
                     >
                         Confirm
                     </Button>

@@ -1,6 +1,6 @@
 import { getCosmWasmClient } from "@sei-js/core"
 import {
-    SigningCosmWasmClient,
+    // SigningCosmWasmClient,
     MsgExecuteContractEncodeObject
 } from "@cosmjs/cosmwasm-stargate"
 import { toUtf8 } from "@cosmjs/encoding"
@@ -12,13 +12,12 @@ import { cosmos } from "juno-network"
 import { coins } from "@cosmjs/proto-signing"
 import { Coin } from "@cosmjs/launchpad"
 import {
-    AssetInfo,
+    // AssetInfo,
     ChainInfo,
     ConnectedChain,
     FuzioContract
 } from "../constants"
 import { toMicroAmount } from "utils/tokens/coins"
-import { StdFee } from "@cosmjs/stargate"
 
 type CreateExecuteMessageArgs = {
     senderAddress: string
@@ -103,15 +102,15 @@ const useContract = () => {
             const executeFunds = option?.funds || ""
             const executeDenom = option?.denom || currentChain.denom
 
-            const fee: StdFee = {
-                amount: [
-                    {
-                        denom: executeDenom,
-                        amount: "1"
-                    }
-                ],
-                gas: "86364"
-            }
+            // const fee: StdFee = {
+            //     amount: [
+            //         {
+            //             denom: executeDenom,
+            //             amount: "1"
+            //         }
+            //     ],
+            //     gas: "86364"
+            // }
 
             const signingCosmWasmClient = await getSigningCosmWasmClient()
             return signingCosmWasmClient
@@ -119,7 +118,7 @@ const useContract = () => {
                     address,
                     contractAddress,
                     executeMsg,
-                    fee,
+                    "auto",
                     executeMemo,
                     executeFunds
                         ? coins(
