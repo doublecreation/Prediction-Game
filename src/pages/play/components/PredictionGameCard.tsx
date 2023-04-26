@@ -106,17 +106,35 @@ export const PredictionGameCard = ({
     const prizeAmount =
         ((round.bear_amount || 0) + (round.bull_amount || 0)) / 1e6
 
-    const { lockedPrice, direction, isWinner } = useMemo(() => {
-        if (!address) return { lockedPrice: 0, direction: "", isWinner: false }
+    const { lockedPrice, direction, isWinner, betDirection } = useMemo(() => {
+        if (!address)
+            return {
+                lockedPrice: 0,
+                direction: "",
+                isWinner: false,
+                betDirection: ""
+            }
         const users = round.users || []
         if (!users.length)
-            return { lockedPrice: 0, direction: "", isWinner: false }
+            return {
+                lockedPrice: 0,
+                direction: "",
+                isWinner: false,
+                betDirection: ""
+            }
         const myInfo = users.find((user) => user.player === address)
-        if (!myInfo) return { lockedPrice: 0, direction: "", isWinner: false }
+        if (!myInfo)
+            return {
+                lockedPrice: 0,
+                direction: "",
+                isWinner: false,
+                betDirection: ""
+            }
         return {
             lockedPrice: Number(myInfo.amount) / 1e6,
             direction: myInfo.direction,
-            isWinner: myInfo.direction === round.winner
+            isWinner: myInfo.direction === round.winner,
+            betDirection: myInfo.direction
         }
     }, [round, address])
 
@@ -367,6 +385,40 @@ export const PredictionGameCard = ({
                             w="14.5rem"
                             zIndex="2"
                             pos="absolute"
+                            _after={
+                                (isClaimedRound && direction === "bull") ||
+                                ((gameStatus === "next" ||
+                                    gameStatus === "live") &&
+                                    lockedPrice &&
+                                    betDirection === "bull")
+                                    ? {
+                                          content:
+                                              gameStatus === "next" ||
+                                              gameStatus === "live"
+                                                  ? '"Entered"'
+                                                  : '"Claimed"',
+                                          position: "absolute",
+                                          right: 0,
+                                          top: 0,
+                                          color:
+                                              gameStatus === "live"
+                                                  ? "black"
+                                                  : "white",
+                                          fontWeight: "normal",
+                                          fontSize: "12px",
+                                          backgroundColor:
+                                              gameStatus === "live"
+                                                  ? "#FFCF3F"
+                                                  : "#00b3ff",
+                                          border:
+                                              gameStatus === "live"
+                                                  ? "none"
+                                                  : "1px solid white",
+                                          borderRadius: "5px",
+                                          padding: "0 5px"
+                                      }
+                                    : {}
+                            }
                         >
                             <Heading
                                 fontSize="20"
@@ -427,6 +479,17 @@ export const PredictionGameCard = ({
                                     >
                                         UP
                                     </Button>
+                                )}
+                                {address && lockedPrice && (
+                                    <Text
+                                        backgroundColor="#00b3ff"
+                                        color="white"
+                                        px={5}
+                                        py={3}
+                                        borderRadius="2rem"
+                                    >{`${
+                                        betDirection === "bull" ? "UP" : "DOWN"
+                                    } Entered`}</Text>
                                 )}
                                 <Flex
                                     fontWeight="600"
@@ -667,6 +730,40 @@ export const PredictionGameCard = ({
                             w="14.5rem"
                             zIndex="2"
                             pos="absolute"
+                            _after={
+                                (isClaimedRound && direction === "bear") ||
+                                ((gameStatus === "next" ||
+                                    gameStatus === "live") &&
+                                    lockedPrice &&
+                                    betDirection === "bear")
+                                    ? {
+                                          content:
+                                              gameStatus === "next" ||
+                                              gameStatus === "live"
+                                                  ? '"Entered"'
+                                                  : '"Claimed"',
+                                          position: "absolute",
+                                          right: 0,
+                                          bottom: 0,
+                                          color:
+                                              gameStatus === "live"
+                                                  ? "black"
+                                                  : "white",
+                                          fontWeight: "normal",
+                                          fontSize: "12px",
+                                          backgroundColor:
+                                              gameStatus === "live"
+                                                  ? "#FFCF3F"
+                                                  : "#00b3ff",
+                                          border:
+                                              gameStatus === "live"
+                                                  ? "none"
+                                                  : "1px solid white",
+                                          borderRadius: "5px",
+                                          padding: "0 5px"
+                                      }
+                                    : {}
+                            }
                         >
                             <Heading
                                 fontSize="20"
