@@ -22,3 +22,4 @@ dist-ssr
 !.yarn/versions
 .pnp.*
 yarn-error.log*
+.env

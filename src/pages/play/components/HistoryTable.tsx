@@ -86,12 +86,6 @@ const HistoryTable = ({ address }: { address?: string }) => {
                     results.map((result) => Number(result.pending_reward) / 1e6)
                 )
                 .catch(() => [])
-            console.log(
-                "debug here",
-                claimableAmountResponse,
-                roundInfoResponse,
-                historyRounds
-            )
             const result = roundInfoResponse.map((roundInfo, index) => ({
                 id: roundInfo.round_id,
                 lastPrice: Number(roundInfo.close_price),
