@@ -34,6 +34,7 @@ import { ConnectedChain } from "../../constants"
 import useWalletConnect from "hooks/useWalletConnect"
 import { useRecoilState } from "recoil"
 import { roundsState } from "state/roundsState"
+import HistoryTable from "./components/HistoryTable"
 
 const Prediction = () => {
     const { address } = useChain(ConnectedChain)
@@ -42,7 +43,7 @@ const Prediction = () => {
     const prevRef = useRef()
     const nextRef = useRef()
     const [rounds] = useRecoilState(roundsState)
-    console.log("debug rounds", rounds)
+    // console.log("debug rounds", rounds)
 
     useEffect(() => {
         if (swiper) {
@@ -158,6 +159,7 @@ const Prediction = () => {
                     </SwiperSlide>
                 ))}
             </Swiper>
+            <HistoryTable address={address} />
         </Flex>
     )
 }

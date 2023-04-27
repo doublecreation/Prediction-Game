@@ -27,7 +27,13 @@ import { FaArrowLeft } from "react-icons/fa"
 import { balanceState, claimState } from "state/userInfo"
 import { SwapIcon } from "components/Assets/SwapIcon"
 import { TRound, TRoundsStatus } from "types"
-import { configState, currentTimeState } from "state/roundsState"
+import {
+    calculatingRoundState,
+    configState,
+    currentTimeState,
+    liveRoundState,
+    nextRoundState
+} from "state/roundsState"
 import { btcPriceState } from "state/btcPriceState"
 import useContract from "hooks/useContract"
 import {
@@ -62,6 +68,9 @@ export const PredictionGameCard = ({
     const [btcPrice] = useRecoilState(btcPriceState)
     const [claimRoundId, setClaimRoundId] = useRecoilState(claimRoundIdState)
     const [claimed] = useRecoilState(claimState)
+    const [, setLiveRoundState] = useRecoilState(liveRoundState)
+    const [, setNextRoundState] = useRecoilState(nextRoundState)
+    const [, setCalculatingRoundState] = useRecoilState(calculatingRoundState)
 
     const { createExecuteMessage, runExecute, runQuery } = useContract()
     const { getSigningCosmWasmClient } = useChain(ConnectedChain)
@@ -93,13 +102,22 @@ export const PredictionGameCard = ({
     //   )
     // })
     const gameStatus: TRoundsStatus = useMemo(() => {
-        const { open_time, close_time } = round
+        const { open_time, close_time, id } = round
         const roundInterval = config.next_round_seconds || 0
         const biddingTime = currentTime + roundInterval * 1e3
         if (biddingTime < open_time) return "later"
-        if (biddingTime > open_time && biddingTime < close_time) return "next"
-        if (currentTime > open_time && currentTime < close_time) return "live"
-        if (round.winner === undefined) return "calculating"
+        if (biddingTime > open_time && biddingTime < close_time) {
+            setNextRoundState(id)
+            return "next"
+        }
+        if (currentTime > open_time && currentTime < close_time) {
+            setLiveRoundState(id)
+            return "live"
+        }
+        if (round.winner === undefined) {
+            setCalculatingRoundState(id)
+            return "calculating"
+        }
         return "expired"
     }, [currentTime, config, round])
 

@@ -61,7 +61,12 @@ export default function Updater(): null {
                 }
             }
             await fetchClaimStatus()
-            setClaimState(result)
+            setClaimState(
+                result.map((round) => ({
+                    ...round,
+                    round_id: Number(round.round_id)
+                }))
+            )
         })()
         ;(async () => {
             let result: any[] = []
@@ -81,7 +86,12 @@ export default function Updater(): null {
                 }
             }
             await fetchMyRounds()
-            setMyGameListState(result)
+            setMyGameListState(
+                result.map((round) => ({
+                    ...round,
+                    round_id: Number(round.round_id)
+                }))
+            )
         })()
     }, [address])
 

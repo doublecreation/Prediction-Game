@@ -20,3 +20,18 @@ export const remainTimeState = atom<number>({
     default: 0,
     key: "remainTimeState"
 })
+
+export const liveRoundState = atom<number>({
+    default: -1,
+    key: "liveRoundState"
+})
+
+export const nextRoundState = atom<number>({
+    default: -1,
+    key: "nextRoundState"
+})
+
+export const calculatingRoundState = atom<number>({
+    default: -1,
+    key: "calculatingRoundState"
+})
