@@ -135,12 +135,12 @@ const Prediction = () => {
                     Navigation,
                     Mousewheel
                 ]}
-                mousewheel={true}
+                mousewheel
                 navigation={{
                     prevEl: prevRef?.current,
                     nextEl: nextRef?.current
                 }}
-                initialSlide={3}
+                initialSlide={Math.max(rounds.length - 2, 0)}
                 // ref={sliderRef}
             >
                 {rounds.map((round, index) => (

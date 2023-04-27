@@ -59,6 +59,7 @@
     "chain-registry": "^1.6.0",
     "chakra-react-select": "^4.4.3",
     "dayjs": "^1.11.7",
+    "dotenv": "^16.0.3",
     "framer-motion": "^8.1.7",
     "juno-network": "^0.14.0",
     "protobufjs": "^7.2.3",
