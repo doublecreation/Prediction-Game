@@ -4,7 +4,7 @@ import axios from "axios"
 import { useChain } from "@cosmos-kit/react"
 import { useRecoilState } from "recoil"
 import { btcPriceState } from "state/btcPriceState"
-import { balanceState, claimState } from "state/userInfo"
+import { balanceState, claimState, myGameListState } from "state/userInfo"
 import {
     configState,
     currentTimeState,
@@ -23,6 +23,7 @@ export default function Updater(): null {
     const [config, setConfig] = useRecoilState(configState)
     const [, setCurrentTime] = useRecoilState(currentTimeState)
     const [, setClaimState] = useRecoilState(claimState)
+    const [, setMyGameListState] = useRecoilState(myGameListState)
     // const [, setRemainTime] = useRecoilState(remainTimeState)
     const { runQuery } = useContract()
 
@@ -61,6 +62,26 @@ export default function Updater(): null {
             }
             await fetchClaimStatus()
             setClaimState(result)
+        })()
+        ;(async () => {
+            let result: any[] = []
+            const fetchMyRounds = async (startAfter?: any) => {
+                const response = await runQuery(FuzioOptionContract, {
+                    my_game_list: {
+                        player: address,
+                        start_after: startAfter,
+                        limit: FETCH_LIMIT
+                    }
+                })
+                    .then((res) => res.my_game_list)
+                    .catch(() => [])
+                result = [...result, ...response]
+                if (response.length === FETCH_LIMIT) {
+                    await fetchMyRounds(response[FETCH_LIMIT - 1].round_id)
+                }
+            }
+            await fetchMyRounds()
+            setMyGameListState(result)
         })()
     }, [address])
 

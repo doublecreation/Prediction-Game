@@ -9,3 +9,8 @@ export const claimState = atom<any[]>({
     default: [],
     key: "claimState"
 })
+
+export const myGameListState = atom<any[]>({
+    default: [],
+    key: "myGameListState"
+})
