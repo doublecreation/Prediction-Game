@@ -3,6 +3,7 @@ import {
     // SigningCosmWasmClient,
     MsgExecuteContractEncodeObject
 } from "@cosmjs/cosmwasm-stargate"
+import { StdFee } from "@cosmjs/stargate"
 import { toUtf8 } from "@cosmjs/encoding"
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx"
 import { useCallback, useMemo } from "react"
@@ -65,27 +66,23 @@ const useContract = () => {
     const getBalance = useCallback(async () => {
         if (!address) return 0
         // get RPC client
-        // const rpcEndpoint = await getRpcEndpointString()
-        // const client = await cosmos.ClientFactory.createRPCQueryClient({
-        //     rpcEndpoint
-        // })
-        // fetch balance
-        // const balance = await client.cosmos.bank.v1beta1.balance({
-        //     address,
-        //     denom: currentChain.denom
-        // })
-        const balance = await runQuery(FuzioContract, {
-            balance: { address }
+        const rpcEndpoint = await getRpcEndpointString()
+        const client = await cosmos.ClientFactory.createRPCQueryClient({
+            rpcEndpoint
         })
+        // fetch balance
+        const balance = await client.cosmos.bank.v1beta1.balance({
+            address,
+            denom: currentChain.denom
+        })
+        // const balance = await runQuery(FuzioContract, {
+        //     balance: { address }
+        // })
 
-        // return Number(balance?.balance?.amount || 0) / 1e6
-        return Number(balance?.balance || 0) / 1e6
-    }, [
-        address,
-        // getRpcEndpointString,
-        runQuery,
-        currentChain
-    ])
+        return Number(balance?.balance?.amount || 0) / 1e6
+        // console.log("debug balance", balance)
+        // return Number(balance?.balance || 0) / 1e6
+    }, [address, getRpcEndpointString, runQuery, currentChain])
 
     const runExecute = useCallback(
         async (
@@ -102,15 +99,15 @@ const useContract = () => {
             const executeFunds = option?.funds || ""
             const executeDenom = option?.denom || currentChain.denom
 
-            // const fee: StdFee = {
-            //     amount: [
-            //         {
-            //             denom: executeDenom,
-            //             amount: "1"
-            //         }
-            //     ],
-            //     gas: "86364"
-            // }
+            const fee: StdFee = {
+                amount: [
+                    {
+                        denom: executeDenom,
+                        amount: "1"
+                    }
+                ],
+                gas: "86364"
+            }
 
             const signingCosmWasmClient = await getSigningCosmWasmClient()
             return signingCosmWasmClient
@@ -118,13 +115,10 @@ const useContract = () => {
                     address,
                     contractAddress,
                     executeMsg,
-                    "auto",
+                    fee,
                     executeMemo,
                     executeFunds
-                        ? coins(
-                              toMicroAmount(executeFunds, executeDenom),
-                              executeDenom
-                          )
+                        ? coins(toMicroAmount(executeFunds, "6"), executeDenom)
                         : undefined
                 )
                 .then((res) => res)

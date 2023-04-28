@@ -44,6 +44,7 @@ import {
 import { useChain } from "@cosmos-kit/react"
 import { toast } from "react-toastify"
 import { IoClose } from "react-icons/io5"
+import { StdFee, calculateFee } from "@cosmjs/stargate"
 
 dayjs.extend(duration)
 
@@ -73,7 +74,7 @@ export const PredictionGameCard = ({
     const [, setCalculatingRoundState] = useRecoilState(calculatingRoundState)
 
     const { createExecuteMessage, runExecute, runQuery } = useContract()
-    const { getSigningCosmWasmClient } = useChain(ConnectedChain)
+    const { getSigningCosmWasmClient, chain } = useChain(ConnectedChain)
 
     const [isPending, setIsPending] = useState(false)
     const [claimableAmount, setClaimableAmount] = useState(0)
@@ -163,6 +164,13 @@ export const PredictionGameCard = ({
         return !!targetRound
     }, [claimed])
 
+    const currentChain = useMemo(
+        () => ({
+            denom: chain?.fees?.fee_tokens?.[0]?.denom || "usei"
+        }),
+        [chain]
+    )
+
     useEffect(() => {
         if (!address) {
             setVotingState("none")
@@ -215,14 +223,18 @@ export const PredictionGameCard = ({
                 }
             })
         ]
+
+        const fee = calculateFee(500000, "0.1usei")
+
         const signingCosmWasmClient = await getSigningCosmWasmClient()
         signingCosmWasmClient
-            .signAndBroadcast(address, transactions, "auto")
+            .signAndBroadcast(address, transactions, fee)
             .then(() => {
                 toast.success("Transaction Success!")
                 setVotingState("none")
             })
             .catch((e) => {
+                console.log("debug", e)
                 toast.error(e.message)
             })
             .finally(() => setIsPending(false))

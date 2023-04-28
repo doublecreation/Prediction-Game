@@ -74,4 +74,4 @@ export const AssetInfo = {
     ]
 }
 
-export const ConnectedChain = "juno" // "seimainnet" | "juno"
+export const ConnectedChain = "seimainnet" // "seimainnet" | "juno"
