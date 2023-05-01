@@ -41,7 +41,7 @@ export default function Updater(): null {
     // })
 
     useEffect(() => {
-        suggestToken("atlantic-2", FuzioContract)
+        // suggestToken("atlantic-2", FuzioContract)
         setInterval(() => {
             setTimeTicker((prev) => prev + 1)
         }, 500)

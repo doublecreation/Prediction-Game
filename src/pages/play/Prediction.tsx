@@ -68,6 +68,7 @@ const Prediction = () => {
             justify="center"
             direction="column"
             px={{ base: 6, md: 32 }}
+            mt="10rem"
         >
             <Helmet>
                 <title>Prediction | Hopers.io</title>
