@@ -12,6 +12,7 @@ import { ExtendedHttpEndpoint } from "@cosmos-kit/core"
 import { cosmos } from "juno-network"
 import { coins } from "@cosmjs/proto-signing"
 import { Coin } from "@cosmjs/launchpad"
+import { Keplr } from "@keplr-wallet/types"
 import {
     // AssetInfo,
     ChainInfo,
@@ -25,6 +26,41 @@ type CreateExecuteMessageArgs = {
     message: Record<string, Record<string, string>>
     contractAddress: string
     funds?: Array<Coin>
+}
+
+let savedKeplr: Keplr
+
+export async function getKeplr(): Promise<Keplr> {
+    let keplr: Keplr | undefined
+    if (savedKeplr) {
+        keplr = savedKeplr
+    } else if (window.keplr) {
+        keplr = window.keplr
+    } else if (document.readyState === "complete") {
+        keplr = window.keplr
+    } else {
+        keplr = await new Promise((resolve) => {
+            const documentStateChange = (event: Event) => {
+                if (
+                    event.target &&
+                    (event.target as Document).readyState === "complete"
+                ) {
+                    resolve(window.keplr)
+                    document.removeEventListener(
+                        "readystatechange",
+                        documentStateChange
+                    )
+                }
+            }
+
+            document.addEventListener("readystatechange", documentStateChange)
+        })
+    }
+
+    if (!keplr) throw new Error("Keplr not found")
+    if (!savedKeplr) savedKeplr = keplr
+
+    return keplr
 }
 
 const useContract = () => {
@@ -66,22 +102,22 @@ const useContract = () => {
     const getBalance = useCallback(async () => {
         if (!address) return 0
         // get RPC client
-        const rpcEndpoint = await getRpcEndpointString()
-        const client = await cosmos.ClientFactory.createRPCQueryClient({
-            rpcEndpoint
-        })
-        // fetch balance
-        const balance = await client.cosmos.bank.v1beta1.balance({
-            address,
-            denom: currentChain.denom
-        })
-        // const balance = await runQuery(FuzioContract, {
-        //     balance: { address }
+        // const rpcEndpoint = await getRpcEndpointString()
+        // const client = await cosmos.ClientFactory.createRPCQueryClient({
+        //     rpcEndpoint
         // })
+        // fetch balance
+        // const balance = await client.cosmos.bank.v1beta1.balance({
+        //     address,
+        //     denom: currentChain.denom
+        // })
+        const balance = await runQuery(FuzioContract, {
+            balance: { address }
+        })
 
-        return Number(balance?.balance?.amount || 0) / 1e6
+        // return Number(balance?.balance?.amount || 0) / 1e6
         // console.log("debug balance", balance)
-        // return Number(balance?.balance || 0) / 1e6
+        return Number(balance?.balance || 0) / 1e6
     }, [address, getRpcEndpointString, runQuery, currentChain])
 
     const runExecute = useCallback(
@@ -145,11 +181,22 @@ const useContract = () => {
         []
     )
 
+    const suggestToken = useCallback(
+        async (chainId: string, tokenAddress: string): Promise<void> => {
+            if (!tokenAddress) return
+            const keplr = await getKeplr()
+
+            await keplr.suggestToken(chainId, tokenAddress)
+        },
+        []
+    )
+
     return {
         getBalance,
         runQuery,
         runExecute,
-        createExecuteMessage
+        createExecuteMessage,
+        suggestToken
     }
 }
 

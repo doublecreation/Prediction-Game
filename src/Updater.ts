@@ -12,7 +12,12 @@ import {
     roundsState
 } from "state/roundsState"
 import useContract from "hooks/useContract"
-import { BackendUrl, FuzioOptionContract, ConnectedChain } from "./constants"
+import {
+    BackendUrl,
+    FuzioOptionContract,
+    ConnectedChain,
+    FuzioContract
+} from "./constants"
 
 const FETCH_LIMIT = 10
 
@@ -25,7 +30,7 @@ export default function Updater(): null {
     const [, setClaimState] = useRecoilState(claimState)
     const [, setMyGameListState] = useRecoilState(myGameListState)
     // const [, setRemainTime] = useRecoilState(remainTimeState)
-    const { runQuery } = useContract()
+    const { runQuery, suggestToken } = useContract()
 
     const [timeTicker, setTimeTicker] = useState(0)
     const [timeDiff, setTimeDiff] = useState(0)
@@ -36,6 +41,7 @@ export default function Updater(): null {
     // })
 
     useEffect(() => {
+        suggestToken("atlantic-2", FuzioContract)
         setInterval(() => {
             setTimeTicker((prev) => prev + 1)
         }, 500)
