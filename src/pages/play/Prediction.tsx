@@ -70,9 +70,9 @@ const Prediction = () => {
             px={{ base: 6, md: 32 }}
             mt="10rem"
         >
-            <Helmet>
+            {/* <Helmet>
                 <title>Prediction | Hopers.io</title>
-            </Helmet>
+            </Helmet> */}
             <Flex
                 w="full"
                 justify="center"
