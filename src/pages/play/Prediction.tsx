@@ -47,6 +47,7 @@ const Prediction = () => {
 
     useEffect(() => {
         if (swiper) {
+            console.log("debug swiper", swiper)
             // @ts-expect-error
             swiper.params.navigation.prevEl = prevRef.current
             // @ts-expect-error
@@ -141,7 +142,7 @@ const Prediction = () => {
                     prevEl: prevRef?.current,
                     nextEl: nextRef?.current
                 }}
-                initialSlide={Math.max(rounds.length - 2, 0)}
+                initialSlide={2}
                 // ref={sliderRef}
             >
                 {rounds.map((round, index) => (

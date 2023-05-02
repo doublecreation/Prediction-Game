@@ -45,6 +45,7 @@ import { useChain } from "@cosmos-kit/react"
 import { toast } from "react-toastify"
 import { IoClose } from "react-icons/io5"
 import { StdFee, calculateFee } from "@cosmjs/stargate"
+import { coins } from "@cosmjs/proto-signing"
 
 dayjs.extend(duration)
 
@@ -202,16 +203,16 @@ export const PredictionGameCard = ({
         setIsPending(true)
 
         const transactions = [
-            createExecuteMessage({
-                senderAddress: address,
-                contractAddress: FuzioContract,
-                message: {
-                    increase_allowance: {
-                        spender: FuzioOptionContract,
-                        amount: `${Number(inputValue) * 1e6}`
-                    }
-                }
-            }),
+            // createExecuteMessage({
+            //     senderAddress: address,
+            //     contractAddress: FuzioContract,
+            //     message: {
+            //         increase_allowance: {
+            //             spender: FuzioOptionContract,
+            //             amount: `${Number(inputValue) * 1e6}`
+            //         }
+            //     }
+            // }),
             createExecuteMessage({
                 senderAddress: address,
                 contractAddress: FuzioOptionContract,
@@ -220,7 +221,8 @@ export const PredictionGameCard = ({
                         round_id: `${round.id}`,
                         amount: `${Number(inputValue) * 1e6}`
                     }
-                }
+                },
+                funds: coins(`${Number(inputValue) * 1e6}`, "usei")
             })
         ]
 
@@ -884,7 +886,8 @@ export const PredictionGameCard = ({
                         alignItems="center"
                     >
                         <Text>Commit:</Text>
-                        <Text>ZIO</Text>
+                        {/* <Text>ZIO</Text> */}
+                        <Text>SEI</Text>
                     </HStack>
                     <NumberInput
                         _after={{

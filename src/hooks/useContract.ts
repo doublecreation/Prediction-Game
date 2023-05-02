@@ -102,22 +102,23 @@ const useContract = () => {
     const getBalance = useCallback(async () => {
         if (!address) return 0
         // get RPC client
-        // const rpcEndpoint = await getRpcEndpointString()
-        // const client = await cosmos.ClientFactory.createRPCQueryClient({
-        //     rpcEndpoint
-        // })
+        const rpcEndpoint = await getRpcEndpointString()
+        const client = await cosmos.ClientFactory.createRPCQueryClient({
+            rpcEndpoint
+        })
         // fetch balance
-        // const balance = await client.cosmos.bank.v1beta1.balance({
-        //     address,
-        //     denom: currentChain.denom
-        // })
-        const balance = await runQuery(FuzioContract, {
-            balance: { address }
+        const balance = await client.cosmos.bank.v1beta1.balance({
+            address,
+            denom: currentChain.denom
         })
 
-        // return Number(balance?.balance?.amount || 0) / 1e6
-        // console.log("debug balance", balance)
-        return Number(balance?.balance || 0) / 1e6
+        return Number(balance?.balance?.amount || 0) / 1e6
+
+        // const balance = await runQuery(FuzioContract, {
+        //     balance: { address }
+        // })
+
+        // return Number(balance?.balance || 0) / 1e6
     }, [address, getRpcEndpointString, runQuery, currentChain])
 
     const runExecute = useCallback(
