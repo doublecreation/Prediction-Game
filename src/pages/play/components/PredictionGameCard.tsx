@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useContext } from "react"
 import {
     Text,
     Flex,
@@ -46,6 +46,7 @@ import { toast } from "react-toastify"
 import { IoClose } from "react-icons/io5"
 import { StdFee, calculateFee } from "@cosmjs/stargate"
 import { coins } from "@cosmjs/proto-signing"
+import { UdaterContext } from "Updater"
 
 dayjs.extend(duration)
 
@@ -76,6 +77,8 @@ export const PredictionGameCard = ({
 
     const { createExecuteMessage, runExecute, runQuery } = useContract()
     const { getSigningCosmWasmClient, chain } = useChain(ConnectedChain)
+
+    const { refreshAll } = useContext(UdaterContext)
 
     const [isPending, setIsPending] = useState(false)
     const [claimableAmount, setClaimableAmount] = useState(0)
@@ -239,7 +242,10 @@ export const PredictionGameCard = ({
                 console.log("debug", e)
                 toast.error(e.message)
             })
-            .finally(() => setIsPending(false))
+            .finally(() => {
+                setIsPending(false)
+                refreshAll()
+            })
     }
 
     const handleCollectWinnings = async () => {
@@ -258,6 +264,7 @@ export const PredictionGameCard = ({
                 setIsPending(false)
                 setClaimRoundId("")
                 setVotingState("none")
+                refreshAll()
             })
     }
 

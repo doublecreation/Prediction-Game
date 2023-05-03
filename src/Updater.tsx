@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { createContext, useEffect, useState, useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { useChain } from "@cosmos-kit/react"
@@ -21,7 +21,19 @@ import {
 
 const FETCH_LIMIT = 10
 
-export default function Updater(): null {
+interface IUpdater {
+    refetchGameInfo: () => Promise<any>
+    refetchBalance: () => Promise<any>
+    refreshAll: () => void
+}
+
+export const UdaterContext = createContext<IUpdater>({
+    refetchGameInfo: () => new Promise(() => {}),
+    refetchBalance: () => new Promise(() => {}),
+    refreshAll: () => {}
+})
+
+export const Updater = ({ children }) => {
     const [, setBtcPrice] = useRecoilState(btcPriceState)
     const [, setRounds] = useRecoilState(roundsState)
     const [, setBalance] = useRecoilState(balanceState)
@@ -108,14 +120,14 @@ export default function Updater(): null {
 
     const { getBalance } = useContract()
 
-    const { data: gameInfo } = useQuery({
+    const { data: gameInfo, refetch: refetchGameInfo } = useQuery({
         queryKey: ["gameInfo"],
         queryFn: () =>
             axios.get(`${BackendUrl}/game-info`).then((res) => res.data),
         refetchInterval: 1000 * 10
     })
 
-    const { data: balanceResopnse } = useQuery({
+    const { data: balanceResopnse, refetch: refetchBalance } = useQuery({
         queryKey: ["balance"],
         queryFn: () => getBalance(),
         refetchInterval: 1000
@@ -169,5 +181,16 @@ export default function Updater(): null {
             setBalance(balanceResopnse)
     }, [balanceResopnse])
 
-    return null
+    const refreshAll = useCallback(() => {
+        refetchGameInfo()
+        refetchBalance()
+    }, [refetchGameInfo, refetchBalance])
+
+    return (
+        <UdaterContext.Provider
+            value={{ refetchGameInfo, refreshAll, refetchBalance }}
+        >
+            {children}
+        </UdaterContext.Provider>
+    )
 }

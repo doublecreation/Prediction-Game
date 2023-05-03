@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useContext } from "react"
 import {
     Button,
     Table,
@@ -20,6 +20,7 @@ import {
     nextRoundState
 } from "state/roundsState"
 import { toast } from "react-toastify"
+import { UdaterContext } from "Updater"
 
 const HistoryTable = ({ address }: { address?: string }) => {
     const [myGameList] = useRecoilState(myGameListState)
@@ -29,6 +30,7 @@ const HistoryTable = ({ address }: { address?: string }) => {
     const [calculatingRound] = useRecoilState(calculatingRoundState)
 
     const { runQuery, runExecute } = useContract()
+    const { refreshAll } = useContext(UdaterContext)
 
     const [displayInfo, setDisplayInfo] = useState<
         {
@@ -115,6 +117,7 @@ const HistoryTable = ({ address }: { address?: string }) => {
             .catch((e) => toast.error(e.message))
             .finally(() => {
                 setIsPending(false)
+                refreshAll()
             })
     }
 

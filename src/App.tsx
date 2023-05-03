@@ -27,7 +27,7 @@ import "react-toastify/dist/ReactToastify.css"
 import RecoilNexus from "recoil-nexus"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { getModal } from "components/WalletModal/getModal"
-import Updater from "Updater"
+import { Updater } from "Updater"
 import { AssetInfo, ChainInfo } from "./constants"
 
 const App = () => {
@@ -225,20 +225,21 @@ const App = () => {
                             isLazy: true
                         }}
                     >
-                        <Updater />
-                        <Router>
-                            <MotionConfig
-                                transition={{
-                                    type: "spring",
-                                    bounce: 0.4,
-                                    damping: 7
-                                }}
-                            >
-                                <Layout>
-                                    <RouterSetup />
-                                </Layout>
-                            </MotionConfig>
-                        </Router>
+                        <Updater>
+                            <Router>
+                                <MotionConfig
+                                    transition={{
+                                        type: "spring",
+                                        bounce: 0.4,
+                                        damping: 7
+                                    }}
+                                >
+                                    <Layout>
+                                        <RouterSetup />
+                                    </Layout>
+                                </MotionConfig>
+                            </Router>
+                        </Updater>
                     </ChainProvider>
                 </QueryClientProvider>
             </RecoilRoot>
