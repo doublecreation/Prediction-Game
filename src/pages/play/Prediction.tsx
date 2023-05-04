@@ -43,6 +43,7 @@ const Prediction = () => {
     const prevRef = useRef()
     const nextRef = useRef()
     const [rounds] = useRecoilState(roundsState)
+    const [loaded, setLoaded] = useState(false)
     // console.log("debug rounds", rounds)
 
     useEffect(() => {
@@ -57,10 +58,11 @@ const Prediction = () => {
     }, [swiper])
 
     useEffect(() => {
-        if (swiper) {
+        if (swiper && !loaded && rounds.length) {
             swiper.slideTo(rounds.length - 1)
+            setLoaded(true)
         }
-    }, [rounds, swiper])
+    }, [rounds, swiper, loaded])
 
     return (
         <Flex
