@@ -47,7 +47,6 @@ const Prediction = () => {
 
     useEffect(() => {
         if (swiper) {
-            console.log("debug swiper", swiper)
             // @ts-expect-error
             swiper.params.navigation.prevEl = prevRef.current
             // @ts-expect-error
