@@ -27,7 +27,7 @@ import "react-toastify/dist/ReactToastify.css"
 import RecoilNexus from "recoil-nexus"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { getModal } from "components/WalletModal/getModal"
-import { Updater } from "Updater"
+import { Updater } from "./Updater"
 import { AssetInfo, ChainInfo } from "./constants"
 
 const App = () => {

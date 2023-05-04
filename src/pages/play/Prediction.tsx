@@ -57,6 +57,12 @@ const Prediction = () => {
         }
     }, [swiper])
 
+    useEffect(() => {
+        if (swiper) {
+            swiper.slideTo(rounds.length - 1)
+        }
+    }, [rounds, swiper])
+
     return (
         <Flex
             gap={{ base: 8, md: 12 }}
@@ -142,7 +148,6 @@ const Prediction = () => {
                     prevEl: prevRef?.current,
                     nextEl: nextRef?.current
                 }}
-                initialSlide={2}
                 // ref={sliderRef}
             >
                 {rounds.map((round, index) => (
