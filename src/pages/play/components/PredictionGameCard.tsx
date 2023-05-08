@@ -32,7 +32,8 @@ import {
     configState,
     currentTimeState,
     liveRoundState,
-    nextRoundState
+    nextRoundState,
+    roundsState
 } from "state/roundsState"
 import { btcPriceState } from "state/btcPriceState"
 import useContract from "hooks/useContract"
@@ -47,6 +48,7 @@ import { IoClose } from "react-icons/io5"
 import { StdFee, calculateFee } from "@cosmjs/stargate"
 import { coins } from "@cosmjs/proto-signing"
 import { UdaterContext } from "Updater"
+import { numberToTime } from "utils/ui/numberToTime"
 
 dayjs.extend(duration)
 
@@ -56,13 +58,13 @@ const getColorByNumber = (num: number): string =>
 export const PredictionGameCard = ({
     connect,
     address,
-    time,
-    round
+    round,
+    id
 }: {
-    connect: () => void
+    connect?: () => void
     address?: string
-    time?: number
-    round: TRound
+    round?: TRound
+    id: number
 }) => {
     const [votingState, setVotingState] = useRecoilState(currentVotingState)
     const [balance] = useRecoilState(balanceState)
@@ -74,6 +76,7 @@ export const PredictionGameCard = ({
     const [, setLiveRoundState] = useRecoilState(liveRoundState)
     const [, setNextRoundState] = useRecoilState(nextRoundState)
     const [, setCalculatingRoundState] = useRecoilState(calculatingRoundState)
+    const [rounds] = useRecoilState(roundsState)
 
     const { createExecuteMessage, runExecute, runQuery } = useContract()
     const { getSigningCosmWasmClient, chain } = useChain(ConnectedChain)
@@ -107,7 +110,8 @@ export const PredictionGameCard = ({
     //   )
     // })
     const gameStatus: TRoundsStatus = useMemo(() => {
-        const { open_time, close_time, id } = round
+        if (!round) return "later"
+        const { open_time, close_time } = round
         const roundInterval = config.next_round_seconds || 0
         const biddingTime = currentTime + roundInterval * 1e3
         if (biddingTime < open_time) return "later"
@@ -124,10 +128,10 @@ export const PredictionGameCard = ({
             return "calculating"
         }
         return "expired"
-    }, [currentTime, config, round])
+    }, [currentTime, config, round, id])
 
     const prizeAmount =
-        ((round.bear_amount || 0) + (round.bull_amount || 0)) / 1e6
+        ((round?.bear_amount || 0) + (round?.bull_amount || 0)) / 1e6
 
     const { lockedPrice, direction, isWinner, betDirection } = useMemo(() => {
         if (!address)
@@ -137,7 +141,7 @@ export const PredictionGameCard = ({
                 isWinner: false,
                 betDirection: ""
             }
-        const users = round.users || []
+        const users = round?.users || []
         if (!users.length)
             return {
                 lockedPrice: 0,
@@ -156,35 +160,43 @@ export const PredictionGameCard = ({
         return {
             lockedPrice: Number(myInfo.amount) / 1e6,
             direction: myInfo.direction,
-            isWinner: myInfo.direction === round.winner,
+            isWinner: myInfo.direction === round?.winner,
             betDirection: myInfo.direction
         }
     }, [round, address])
 
     const isClaimedRound = useMemo(() => {
         const targetRound = claimed.find(
-            (claimedRound) => Number(claimedRound.round_id) === round.id
+            (claimedRound) => Number(claimedRound.round_id) === id
         )
         return !!targetRound
-    }, [claimed])
+    }, [claimed, id])
 
-    const currentChain = useMemo(
-        () => ({
-            denom: chain?.fees?.fee_tokens?.[0]?.denom || "usei"
-        }),
-        [chain]
-    )
+    // const currentChain = useMemo(
+    //     () => ({
+    //         denom: chain?.fees?.fee_tokens?.[0]?.denom || "usei"
+    //     }),
+    //     [chain]
+    // )
+
+    const remainTime = useMemo(() => {
+        const lastRound = rounds[rounds.length - 1]
+        const roundInterval = config.next_round_seconds || 300
+        return lastRound
+            ? (lastRound.open_time - currentTime) / 1000
+            : roundInterval
+    }, [rounds, config, currentTime])
 
     useEffect(() => {
         if (!address) {
             setVotingState("none")
             return
         }
-        if (votingState === "claim" && claimRoundId === round.id) {
+        if (votingState === "claim" && claimRoundId === id) {
             ;(async () => {
                 const response = await runQuery(FuzioOptionContract, {
                     my_pending_reward_round: {
-                        round_id: `${round.id}`,
+                        round_id: `${id}`,
                         player: address
                     }
                 })
@@ -193,7 +205,7 @@ export const PredictionGameCard = ({
                 setClaimableAmount(response)
             })()
         }
-    }, [address, round, votingState, claimRoundId])
+    }, [address, round, votingState, claimRoundId, id])
 
     const handleChangeInputValue = (event) => {
         event.preventDefault()
@@ -221,7 +233,7 @@ export const PredictionGameCard = ({
                 contractAddress: FuzioOptionContract,
                 message: {
                     [votingState === "up" ? "bet_bull" : "bet_bear"]: {
-                        round_id: `${round.id}`,
+                        round_id: `${id}`,
                         amount: `${Number(inputValue) * 1e6}`
                     }
                 },
@@ -252,7 +264,7 @@ export const PredictionGameCard = ({
         setIsPending(true)
         runExecute(FuzioOptionContract, {
             collection_winning_round: {
-                round_id: `${round.id}`
+                round_id: `${id}`
             }
         })
             .then(() => {
@@ -281,7 +293,7 @@ export const PredictionGameCard = ({
             // whileHover={{ opacity: 1 }}
             opacity={
                 votingState === "none" ||
-                (votingState === "claim" && claimRoundId == round.id)
+                (votingState === "claim" && claimRoundId == id)
                     ? 1
                     : gameStatus === "next"
                     ? 1
@@ -289,7 +301,7 @@ export const PredictionGameCard = ({
             }
             style={{ transition: "opacity 0.5s" }}
         >
-            {claimRoundId !== round.id && (
+            {claimRoundId !== id && (
                 <Flex
                     px={2}
                     py={2}
@@ -340,7 +352,7 @@ export const PredictionGameCard = ({
                     {/* {gameIcon} */}
                     {gameStatus !== "next" ||
                     votingState === "none" ||
-                    (votingState === "claim" && claimRoundId !== round.id) ? (
+                    (votingState === "claim" && claimRoundId !== id) ? (
                         <Box
                             w="1.2rem"
                             h="1.2rem"
@@ -362,17 +374,17 @@ export const PredictionGameCard = ({
                     <Text fontWeight="600">
                         {gameStatus !== "next" ||
                         votingState === "none" ||
-                        (votingState === "claim" && claimRoundId !== round.id)
+                        (votingState === "claim" && claimRoundId !== id)
                             ? gameStatus.toUpperCase()
                             : "Set Position"}
                     </Text>
                     <Spacer />
-                    <Text>{`#${round.id}`}</Text>
+                    <Text>{`#${id}`}</Text>
                 </Flex>
             )}
             {votingState === "none" ||
-            (votingState === "claim" && claimRoundId !== round.id) ||
-            (gameStatus !== "next" && claimRoundId !== round.id) ? (
+            (votingState === "claim" && claimRoundId !== id) ||
+            (gameStatus !== "next" && claimRoundId !== id) ? (
                 <>
                     <svg width="0" height="0">
                         <defs>
@@ -410,7 +422,7 @@ export const PredictionGameCard = ({
                                 border="1px solid white"
                                 onClick={() => {
                                     setVotingState("claim")
-                                    setClaimRoundId(round.id)
+                                    setClaimRoundId(id)
                                 }}
                                 disabled={isPending}
                             >
@@ -474,7 +486,9 @@ export const PredictionGameCard = ({
                                 }
                                 clipPath="url(#upClip)"
                                 bg={
-                                    round.close_price - round.open_price > 0
+                                    (round?.close_price || 0) -
+                                        (round?.open_price || 0) >
+                                    0
                                         ? "#00dd31"
                                         : "#B1B1B1"
                                 }
@@ -569,7 +583,7 @@ export const PredictionGameCard = ({
                                         w="full"
                                         rounded="1em"
                                         style={{ backgroundColor: "#00b3ff" }}
-                                        onClick={connect}
+                                        onClick={connect || (() => {})}
                                     >
                                         CONNECT
                                     </Button>
@@ -599,11 +613,16 @@ export const PredictionGameCard = ({
                             <Text w="full" textAlign="center" fontSize="13">
                                 Game starts in:
                             </Text>
-                            <CountdownTimer
-                                timeTo={dayjs()
-                                    .add(time ?? 0, "m")
-                                    .unix()}
-                            />
+                            <Heading
+                                fontSize="32"
+                                textAlign="center"
+                                mt={3}
+                                fontWeight="normal"
+                            >
+                                {`~ ${numberToTime(
+                                    Math.max(Math.floor(remainTime), 0)
+                                )}`}
+                            </Heading>
                         </Flex>
                     )}
                     {gameStatus === "live" && (
@@ -631,17 +650,17 @@ export const PredictionGameCard = ({
                                     fontSize="26"
                                     color={getColorByNumber(
                                         btcPrice.priceNumber -
-                                            (round.open_price || 0)
+                                            (round?.open_price || 0)
                                     )}
                                 >{`$${btcPrice.price}`}</Heading>
                                 <Text
                                     color={getColorByNumber(
                                         btcPrice.priceNumber -
-                                            (round.open_price || 0)
+                                            (round?.open_price || 0)
                                     )}
                                 >{`$${
                                     btcPrice.priceNumber -
-                                    (round.open_price || 0)
+                                    (round?.open_price || 0)
                                 }`}</Text>
                             </Flex>
                             <Flex
@@ -695,20 +714,23 @@ export const PredictionGameCard = ({
                                 <Heading
                                     fontSize="26"
                                     color={getColorByNumber(
-                                        round.close_price - round.open_price
+                                        (round?.close_price || 0) -
+                                            (round?.open_price || 0)
                                     )}
                                 >{`$${Number(
-                                    round.close_price || 0
+                                    round?.close_price || 0
                                 ).toLocaleString("en-US", {
                                     maximumFractionDigits: 3
                                 })}`}</Heading>
                                 <Text
                                     fontWeight="bold"
                                     color={getColorByNumber(
-                                        round.close_price - round.open_price
+                                        (round?.close_price || 0) -
+                                            (round?.open_price || 0)
                                     )}
                                 >{`$${
-                                    round.close_price - round.open_price
+                                    (round?.close_price || 0) -
+                                    (round?.open_price || 0)
                                 }`}</Text>
                             </Flex>
                             <Flex
@@ -755,7 +777,7 @@ export const PredictionGameCard = ({
                                 border="1px solid white"
                                 onClick={() => {
                                     setVotingState("claim")
-                                    setClaimRoundId(round.id)
+                                    setClaimRoundId(id)
                                 }}
                                 disabled={isPending}
                             >
@@ -819,7 +841,9 @@ export const PredictionGameCard = ({
                                 }
                                 clipPath="url(#downClip)"
                                 bg={
-                                    round.close_price - round.open_price < 0
+                                    (round?.close_price || 0) -
+                                        (round?.open_price || 0) <
+                                    0
                                         ? "#dd0000"
                                         : "#B1B1B1"
                                 }
@@ -832,7 +856,7 @@ export const PredictionGameCard = ({
                         </VStack>
                     )}
                 </>
-            ) : votingState === "claim" && claimRoundId === round.id ? (
+            ) : votingState === "claim" && claimRoundId === id ? (
                 <VStack
                     w="full"
                     h="full"
@@ -863,7 +887,7 @@ export const PredictionGameCard = ({
                         <Text>Collecting</Text>
                         <Text>{claimableAmount}</Text>
                     </HStack>
-                    <Text>{`From round #${round.id}`}</Text>
+                    <Text>{`From round #${id}`}</Text>
                     <Button
                         w="full"
                         color="white"

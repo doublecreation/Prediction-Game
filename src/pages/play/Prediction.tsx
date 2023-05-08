@@ -160,12 +160,27 @@ const Prediction = () => {
                         }}
                     >
                         <PredictionGameCard
+                            id={round.id}
                             round={round}
                             connect={connect}
                             address={address}
                         />
                     </SwiperSlide>
                 ))}
+                <SwiperSlide
+                    style={{
+                        justifyContent: "center",
+                        display: "flex"
+                    }}
+                >
+                    <PredictionGameCard
+                        id={
+                            rounds
+                                ? (rounds[rounds.length - 1]?.id || 0) + 1
+                                : 0
+                        }
+                    />
+                </SwiperSlide>
             </Swiper>
             <HistoryTable address={address} />
         </Flex>
