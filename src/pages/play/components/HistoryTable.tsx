@@ -44,6 +44,7 @@ const HistoryTable = ({ address }: { address?: string }) => {
     const [isPending, setIsPending] = useState(false)
 
     const historyRounds = useMemo(() => {
+        if (!address) return []
         const merged = [...myGameList, ...claimed]
         return merged
             .filter(
@@ -53,12 +54,15 @@ const HistoryTable = ({ address }: { address?: string }) => {
                     round.round_id !== calculatingRound
             )
             .sort((round1, round2) => round2.round_id - round1.round_id)
-            .slice(0, Math.min(merged.length, 4))
+            .slice(0, Math.min(merged.length, 5))
             .reverse()
-    }, [myGameList, claimed, liveRound, nextRound, calculatingRound])
+    }, [myGameList, claimed, liveRound, nextRound, calculatingRound, address])
 
     useEffect(() => {
-        if (!address) return
+        if (!address) {
+            setDisplayInfo([])
+            return
+        }
         ;(async () => {
             const fetchRoundInfoQueries = historyRounds.map((round) =>
                 runQuery(FuzioOptionContract, {
