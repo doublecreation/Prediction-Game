@@ -143,7 +143,7 @@ const useContract = () => {
                         amount: "1"
                     }
                 ],
-                gas: "86364"
+                gas: "500000"
             }
 
             const signingCosmWasmClient = await getSigningCosmWasmClient()

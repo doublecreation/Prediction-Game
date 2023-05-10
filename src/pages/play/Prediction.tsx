@@ -179,6 +179,7 @@ const Prediction = () => {
                                 ? (rounds[rounds.length - 1]?.id || 0) + 1
                                 : 0
                         }
+                        address={address}
                     />
                 </SwiperSlide>
             </Swiper>

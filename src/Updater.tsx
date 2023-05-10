@@ -24,12 +24,14 @@ const FETCH_LIMIT = 10
 interface IUpdater {
     refetchGameInfo: () => Promise<any>
     refetchBalance: () => Promise<any>
+    refetchClaimStatus: () => void
     refreshAll: () => void
 }
 
 export const UdaterContext = createContext<IUpdater>({
     refetchGameInfo: () => new Promise(() => {}),
     refetchBalance: () => new Promise(() => {}),
+    refetchClaimStatus: () => {},
     refreshAll: () => {}
 })
 
@@ -44,6 +46,7 @@ export const Updater = ({ children }) => {
     // const [, setRemainTime] = useRecoilState(remainTimeState)
     const { runQuery, suggestToken } = useContract()
 
+    const [fetchClaimStatusHandler, setFetchClaimStatusHandler] = useState(0)
     const [timeTicker, setTimeTicker] = useState(0)
     const [timeDiff, setTimeDiff] = useState(0)
     const { address } = useChain(ConnectedChain)
@@ -111,7 +114,7 @@ export const Updater = ({ children }) => {
                 }))
             )
         })()
-    }, [address])
+    }, [address, fetchClaimStatusHandler])
 
     useEffect(() => {
         const now = Number(new Date())
@@ -181,14 +184,23 @@ export const Updater = ({ children }) => {
             setBalance(balanceResopnse)
     }, [balanceResopnse])
 
+    const refetchClaimStatus = () =>
+        setFetchClaimStatusHandler((prev) => prev + 1)
+
     const refreshAll = useCallback(() => {
         refetchGameInfo()
         refetchBalance()
-    }, [refetchGameInfo, refetchBalance])
+        refetchClaimStatus()
+    }, [refetchGameInfo, refetchBalance, refetchClaimStatus])
 
     return (
         <UdaterContext.Provider
-            value={{ refetchGameInfo, refreshAll, refetchBalance }}
+            value={{
+                refetchGameInfo,
+                refreshAll,
+                refetchBalance,
+                refetchClaimStatus
+            }}
         >
             {children}
         </UdaterContext.Provider>
