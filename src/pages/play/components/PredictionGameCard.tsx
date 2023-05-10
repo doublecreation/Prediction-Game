@@ -190,6 +190,7 @@ export const PredictionGameCard = ({
     useEffect(() => {
         if (!address) {
             setVotingState("none")
+            setInputValue("")
             return
         }
         if (votingState === "claim" && claimRoundId === id) {
@@ -249,6 +250,7 @@ export const PredictionGameCard = ({
             .then(() => {
                 toast.success("Transaction Success!")
                 setVotingState("none")
+                setInputValue("")
             })
             .catch((e) => {
                 console.log("debug", e)
@@ -269,13 +271,14 @@ export const PredictionGameCard = ({
         })
             .then(() => {
                 toast.success("Successfully Collected.")
-                setVotingState("none")
             })
             .catch((e) => toast.error(e.message))
             .finally(() => {
                 setIsPending(false)
                 setClaimRoundId("")
                 setVotingState("none")
+                setInputValue("")
+
                 refreshAll()
             })
     }

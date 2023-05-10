@@ -53,7 +53,7 @@ const HistoryTable = ({ address }: { address?: string }) => {
                     round.round_id !== calculatingRound
             )
             .sort((round1, round2) => round2.round_id - round1.round_id)
-            .slice(0, Math.min(merged.length, 5))
+            .slice(0, Math.min(merged.length, 4))
             .reverse()
     }, [myGameList, claimed, liveRound, nextRound, calculatingRound])
 
